@@ -1,1 +1,5 @@
-export const CORE_VERSION = '0.0.0';
+export * from './types.js';
+export * from './constants.js';
+export * from './canonicalize.js';
+export * from './hash.js';
+export * from './verify.js';
