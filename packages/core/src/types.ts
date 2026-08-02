@@ -32,6 +32,12 @@ export interface ChainRow extends AuditEvent {
 }
 
 /**
+ * An event queued for the outbox before it has a chain position. `seq` (and therefore
+ * `prevHash`/`rowHash`) is assigned later, when the worker drains it — ARCHITECTURE.md §2.2.
+ */
+export type PendingAuditEvent = Omit<AuditEvent, 'seq'>;
+
+/**
  * The exact object hashed for a row — ARCHITECTURE.md §3.1.
  * Key set is fixed; absent optionals are `null`, never omitted.
  */
