@@ -1,0 +1,6 @@
+{
+  "name": "@vellum/example-ndis-app",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Runnable NDIS provider demo wiring @vellum/nestjs into a real domain. Built out in Phase 6/9."
+}

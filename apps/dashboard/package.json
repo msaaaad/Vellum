@@ -1,0 +1,6 @@
+{
+  "name": "@vellum/dashboard",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Read-only Next.js dashboard for browsing and verifying audit chains. Scaffolded in Phase 7."
+}

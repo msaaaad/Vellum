@@ -1,0 +1,18 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --version)",
+      "Bash(git --version)",
+      "Bash(npm --version)",
+      "Bash(corepack --version)",
+      "Bash(git init *)",
+      "Bash(npm view *)",
+      "Bash(corepack enable *)",
+      "Bash(corepack use *)",
+      "Bash(corepack pnpm *)",
+      "Bash(cp packages/core/src/index.ts /tmp/index.ts.bak)",
+      "Bash(git checkout *)",
+      "Bash(node -e ' *)"
+    ]
+  }
+}
