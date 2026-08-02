@@ -1,3 +1,3 @@
-import { CORE_VERSION } from '@vellum/core';
+import { GENESIS_HASH } from '@vellum/core';
 
-export const STORAGE_PG_PACKAGE_VERSION = CORE_VERSION;
+export const STORAGE_PG_GENESIS_HASH = GENESIS_HASH;

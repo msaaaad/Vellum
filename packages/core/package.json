@@ -3,13 +3,22 @@
   "version": "0.0.0",
   "private": true,
   "description": "Framework-agnostic canonicalization, hashing, and verification for Vellum audit chains.",
+  "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "canonicalize": "^3.0.0"
+  },
   "devDependencies": {
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"

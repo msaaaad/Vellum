@@ -1,3 +1,3 @@
-import { CORE_VERSION } from '@vellum/core';
+import { GENESIS_HASH } from '@vellum/core';
 
-export const NESTJS_PACKAGE_VERSION = CORE_VERSION;
+export const NESTJS_PACKAGE_GENESIS_HASH = GENESIS_HASH;

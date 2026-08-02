@@ -1,7 +1,7 @@
-const js = require('@eslint/js');
-const tseslint = require('typescript-eslint');
+import js from '@eslint/js';
+import tseslint from 'typescript-eslint';
 
-module.exports = tseslint.config(
+export default tseslint.config(
   {
     ignores: ['**/dist/**', '**/node_modules/**', '**/.turbo/**'],
   },
@@ -13,7 +13,7 @@ module.exports = tseslint.config(
     },
   },
   {
-    files: ['**/*.cjs', 'eslint.config.js'],
+    files: ['**/*.cjs'],
     languageOptions: {
       sourceType: 'commonjs',
       globals: { module: 'writable', require: 'readonly' },
