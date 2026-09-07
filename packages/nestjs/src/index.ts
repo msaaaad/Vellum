@@ -1,3 +1,12 @@
-import { GENESIS_HASH } from '@vellum/core';
-
-export const NESTJS_PACKAGE_GENESIS_HASH = GENESIS_HASH;
+export * from './types.js';
+export { AUDIT_MODULE_OPTIONS, AUDIT_STORAGE, AUDITED_METADATA_KEY } from './tokens.js';
+export { withAuditContext, getAuditContext } from './context.js';
+export { redact } from './redact.js';
+export { computeDiff, type Diff } from './diff.js';
+export { Audited } from './decorator.js';
+export { AuditContextMiddleware } from './middleware.js';
+export { AuditInterceptor } from './interceptor.js';
+export { AuditWriter, type BuildPendingInput } from './audit-writer.service.js';
+export { AuditService } from './audit.service.js';
+export { AuditOutboxWorker } from './outbox-worker.service.js';
+export { AuditModule, type AuditModuleAsyncOptions } from './module.js';

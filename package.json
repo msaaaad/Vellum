@@ -10,18 +10,23 @@
     "build": "pnpm -r --if-present run build",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:integration": "node packages/storage-pg/scripts/setup-test-db.mjs && vitest run --config vitest.integration.config.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "pnpm -r --if-present run typecheck",
-    "depcruise": "depcruise packages apps examples --config .dependency-cruiser.cjs"
+    "depcruise": "depcruise packages apps examples --config .dependency-cruiser.cjs",
+    "db:up": "docker compose up -d",
+    "db:down": "docker compose down"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",
     "@types/node": "^22.10.0",
     "dependency-cruiser": "^16.7.0",
     "eslint": "^9.15.0",
+    "globals": "^17.0.0",
     "pnpm": "11.18.0",
     "prettier": "^3.4.0",
+    "reflect-metadata": "^0.2.2",
     "typescript": "^5.7.0",
     "typescript-eslint": "^8.15.0",
     "vitest": "^2.1.0"
