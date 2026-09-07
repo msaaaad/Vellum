@@ -16,6 +16,7 @@ function fakeStorage(overrides: Partial<StoragePort<unknown>> = {}): StoragePort
     readRange: vi.fn().mockResolvedValue([]),
     enqueue: vi.fn().mockResolvedValue(undefined),
     drainOutbox: vi.fn().mockResolvedValue([]),
+    listOutboxTenants: vi.fn().mockResolvedValue([]),
     ...overrides,
   };
 }
@@ -80,9 +81,28 @@ describe('AuditWriter.write', () => {
     );
   });
 
-  it("mode: 'outbox' is not wired up for the non-transactional write path yet (Phase 4)", async () => {
-    const writer = new AuditWriter(fakeStorage(), baseOptions({ mode: 'outbox' }));
-    await expect(writer.write(writer.buildPending(pendingInput))).rejects.toThrow(/Phase 4/);
+  it("mode: 'outbox' queues a standalone (no tx) outbox row instead of appending inline", async () => {
+    const storage = fakeStorage();
+    const writer = new AuditWriter(storage, baseOptions({ mode: 'outbox' }));
+    const pending = writer.buildPending(pendingInput);
+
+    const result = await writer.write(pending);
+
+    expect(storage.enqueue).toHaveBeenCalledWith(undefined, pending);
+    expect(storage.appendInline).not.toHaveBeenCalled();
+    // No ChainRow yet — AuditOutboxWorker assigns seq/prevHash/rowHash when it drains this later.
+    expect(result).toBeUndefined();
+  });
+
+  it('routes an outbox-mode enqueue failure to onError instead of throwing when configured', async () => {
+    const onError = vi.fn();
+    const storage = fakeStorage({ enqueue: vi.fn().mockRejectedValue(new Error('db down')) });
+    const writer = new AuditWriter(storage, baseOptions({ mode: 'outbox', onError }));
+    await expect(writer.write(writer.buildPending(pendingInput))).resolves.toBeUndefined();
+    expect(onError).toHaveBeenCalledWith(
+      expect.any(Error),
+      expect.objectContaining({ action: 'thing.done' }),
+    );
   });
 });
 

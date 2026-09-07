@@ -8,4 +8,5 @@ export { AuditContextMiddleware } from './middleware.js';
 export { AuditInterceptor } from './interceptor.js';
 export { AuditWriter, type BuildPendingInput } from './audit-writer.service.js';
 export { AuditService } from './audit.service.js';
+export { AuditOutboxWorker } from './outbox-worker.service.js';
 export { AuditModule, type AuditModuleAsyncOptions } from './module.js';

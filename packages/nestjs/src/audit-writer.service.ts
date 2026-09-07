@@ -45,25 +45,24 @@ export class AuditWriter {
     };
   }
 
-  /** The non-transactional write path: `@Audited()` and `audit.record()` both land here. */
+  /**
+   * The non-transactional write path: `@Audited()` and `audit.record()` both land here.
+   * `mode: 'inline'` appends synchronously; `mode: 'outbox'` queues a standalone (no caller tx)
+   * outbox row for `AuditOutboxWorker` to chain later — same on-disk chain either way, per
+   * DOMAIN_CHECKLIST.md Phase 4's "config switch produces an identical chain".
+   */
   async write(pending: PendingAuditEvent): Promise<ChainRow | void> {
     const mode = this.options.mode ?? 'inline';
-    if (mode !== 'inline') {
-      // Draining audit_outbox via a BullMQ worker is Phase 4 (DOMAIN_CHECKLIST.md). The
-      // transactional `enqueue()` API below works today regardless of mode — it just writes
-      // audit_outbox rows, which is all that requires no worker yet.
-      throw new Error(
-        "AuditWriter: mode 'outbox' isn't wired up for @Audited()/record() yet (the BullMQ worker " +
-          'ships in Phase 4). Use audit.enqueue(tx, …) inside your own transaction in the meantime.',
-      );
-    }
-
     try {
-      return await this.storage.appendInline(pending);
+      if (mode === 'inline') {
+        return await this.storage.appendInline(pending);
+      }
+      await this.storage.enqueue(undefined, pending);
+      return undefined;
     } catch (err) {
       if (this.options.onError) {
         this.options.onError(err, pending);
-        return;
+        return undefined;
       }
       throw err;
     }

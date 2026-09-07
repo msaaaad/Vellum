@@ -41,8 +41,13 @@ export interface PrismaStorageConfig {
 
 export type AuditStorageConfig = PgStorageConfig | PrismaStorageConfig;
 
-/** Outbox worker config — the shape is fixed now so `mode: 'outbox'` doesn't need a breaking
- * change later, but the worker itself (BullMQ consumer) ships in Phase 4. */
+/**
+ * Outbox worker config, consumed by `AuditOutboxWorker` (Phase 4). `connection` is `unknown`
+ * here on purpose — it's really BullMQ's `ConnectionOptions` (ioredis options or an ioredis
+ * instance), but this public type surface stays framework-agnostic the same way `packages/core`
+ * does, so an inline-mode-only consumer never needs `bullmq`'s types resolvable at all. The
+ * worker casts it internally, where it already unconditionally depends on `bullmq`.
+ */
 export interface AuditOutboxConfig {
   queueName?: string;
   connection: unknown;

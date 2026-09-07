@@ -28,8 +28,13 @@ export interface StoragePort<TTx = unknown> {
   /** Reads rows for a tenant, ordered by seq ascending, optionally restricted to a seq range. */
   readRange(tenantId: string, options?: ReadRangeOptions): Promise<ChainRow[]>;
 
-  /** Queues an event in the outbox inside the caller's transaction — ARCHITECTURE.md §4.4. */
-  enqueue(tx: TTx, event: PendingAuditEvent): Promise<void>;
+  /**
+   * Queues an event in the outbox — ARCHITECTURE.md §4.4. Pass `tx` (the caller's own
+   * transaction) for atomicity with a business change, per the README's transactional
+   * `enqueue(tx, …)` API; omit it for a self-managed, standalone insert (used by the
+   * non-transactional `@Audited()`/`record()` write path when `mode: 'outbox'`).
+   */
+  enqueue(tx: TTx | undefined, event: PendingAuditEvent): Promise<void>;
 
   /**
    * Drains up to `batchSize` queued events for a tenant, in enqueue order: assigns each a
@@ -37,4 +42,12 @@ export interface StoragePort<TTx = unknown> {
    * one transaction, per ARCHITECTURE.md §4.4.
    */
   drainOutbox(tenantId: string, batchSize?: number): Promise<ChainRow[]>;
+
+  /**
+   * Distinct tenant ids with at least one queued outbox row, oldest-enqueued first. Lets a
+   * worker discover what needs draining from DB state alone — no external notification
+   * channel required, so a cold-started worker (or one that just crashed and restarted)
+   * recovers correctly without missing a tenant.
+   */
+  listOutboxTenants(limit?: number): Promise<string[]>;
 }

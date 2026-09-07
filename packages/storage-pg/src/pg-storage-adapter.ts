@@ -138,8 +138,11 @@ export class PgStorageAdapter implements StoragePort<PoolClient> {
     }
   }
 
-  async enqueue(tx: PoolClient, event: PendingAuditEvent): Promise<void> {
-    await tx.query('INSERT INTO audit_outbox (tenant_id, payload) VALUES ($1, $2)', [
+  async enqueue(tx: PoolClient | undefined, event: PendingAuditEvent): Promise<void> {
+    // A single INSERT is already atomic on its own, so a standalone call (no caller tx) can
+    // just run it straight against the pool — no BEGIN/COMMIT needed for one statement.
+    const client = tx ?? this.pool;
+    await client.query('INSERT INTO audit_outbox (tenant_id, payload) VALUES ($1, $2)', [
       event.tenantId,
       JSON.stringify(event),
     ]);
@@ -185,6 +188,17 @@ export class PgStorageAdapter implements StoragePort<PoolClient> {
     } finally {
       client.release();
     }
+  }
+
+  async listOutboxTenants(limit = 100): Promise<string[]> {
+    // No RLS on audit_outbox (unlike audit_events — ARCHITECTURE.md §7 scopes RLS to the chain
+    // itself), so this deliberately reads across all tenants: it's worker-side infrastructure,
+    // not a tenant-facing read.
+    const result = await this.pool.query<{ tenant_id: string }>(
+      'SELECT tenant_id FROM audit_outbox GROUP BY tenant_id ORDER BY MIN(enqueued_at) ASC LIMIT $1',
+      [limit],
+    );
+    return result.rows.map((row) => row.tenant_id);
   }
 
   private async currentHead(client: PoolClient, tenantId: string): Promise<ChainHead | null> {

@@ -25,9 +25,18 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.0"
   },
+  "peerDependencies": {
+    "bullmq": "^5.0.0"
+  },
+  "peerDependenciesMeta": {
+    "bullmq": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@nestjs/testing": "^10.4.0",
     "@types/pg": "^8.20.0",
+    "bullmq": "^5.0.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"
   }

@@ -45,6 +45,10 @@ class InMemoryStorage implements StoragePort<unknown> {
   async drainOutbox() {
     return [];
   }
+
+  async listOutboxTenants() {
+    return [];
+  }
 }
 
 const OLD_NAME = 'Old Name';

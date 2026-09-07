@@ -18,6 +18,7 @@ function fakeStorage(): StoragePort<unknown> {
     readRange: vi.fn().mockResolvedValue([]),
     enqueue: vi.fn().mockResolvedValue(undefined),
     drainOutbox: vi.fn().mockResolvedValue([]),
+    listOutboxTenants: vi.fn().mockResolvedValue([]),
   };
 }
 

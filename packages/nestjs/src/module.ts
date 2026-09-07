@@ -10,6 +10,7 @@ import { AuditWriter } from './audit-writer.service.js';
 import { AuditService } from './audit.service.js';
 import { AuditContextMiddleware } from './middleware.js';
 import { AuditInterceptor } from './interceptor.js';
+import { AuditOutboxWorker } from './outbox-worker.service.js';
 import { buildStorage } from './storage.js';
 import { AUDIT_MODULE_OPTIONS, AUDIT_STORAGE } from './tokens.js';
 import type { AuditModuleOptions } from './types.js';
@@ -24,6 +25,7 @@ const EXPORTS = [
   AuditService,
   AuditWriter,
   AuditContextMiddleware,
+  AuditOutboxWorker,
   AUDIT_STORAGE,
   AUDIT_MODULE_OPTIONS,
 ];
@@ -34,6 +36,8 @@ const SHARED_PROVIDERS: Provider[] = [
   AuditService,
   AuditContextMiddleware,
   AuditInterceptor,
+  // OnModuleInit no-ops unless mode: 'outbox' — see AuditOutboxWorker's own doc comment.
+  AuditOutboxWorker,
   // Registered globally so the quick-start needs no manual `@UseInterceptors(AuditInterceptor)` —
   // `useExisting` (not `useClass`) so this shares the one `AuditInterceptor` instance rather than
   // constructing a second one under the APP_INTERCEPTOR token.
