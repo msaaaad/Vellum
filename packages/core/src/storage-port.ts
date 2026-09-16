@@ -10,6 +10,16 @@ export interface ReadRangeOptions {
   toSeq?: number;
 }
 
+/** A recorded `audit_checkpoints` row — ARCHITECTURE.md §2.3 / §7 external-anchoring support. */
+export interface Checkpoint {
+  id: string;
+  tenantId: string;
+  headSeq: number;
+  headHash: string;
+  createdAt: string;
+  anchoredRef: string | null;
+}
+
 /**
  * The storage seam every adapter (storage-pg, storage-prisma, ...) implements —
  * ARCHITECTURE.md §4. `TTx` is the adapter's native transaction/client type (e.g. a pg
@@ -50,4 +60,12 @@ export interface StoragePort<TTx = unknown> {
    * recovers correctly without missing a tenant.
    */
   listOutboxTenants(limit?: number): Promise<string[]>;
+
+  /**
+   * Records the tenant's current chain head into `audit_checkpoints` — ARCHITECTURE.md §7. Says
+   * "at this moment the chain head was X"; once `headHash` is published somewhere the app's own
+   * DB role can't rewrite (`anchoredRef` records where), history before it is frozen even
+   * against a full-database-owner rewrite. An empty chain checkpoints at the genesis hash.
+   */
+  recordCheckpoint(tenantId: string, anchoredRef?: string | null): Promise<Checkpoint>;
 }

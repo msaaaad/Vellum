@@ -1,3 +1,11 @@
-import { GENESIS_HASH } from '@vellum/core';
+#!/usr/bin/env node
+import { run } from './cli.js';
 
-export const CLI_GENESIS_HASH = GENESIS_HASH;
+run(process.argv.slice(2))
+  .then((code) => {
+    process.exitCode = code;
+  })
+  .catch((err: unknown) => {
+    console.error(err instanceof Error ? (err.stack ?? err.message) : String(err));
+    process.exitCode = 1;
+  });

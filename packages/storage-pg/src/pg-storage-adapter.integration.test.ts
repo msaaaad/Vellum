@@ -1,9 +1,10 @@
 import { randomUUID } from 'node:crypto';
 import { Client, Pool } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { verifyChain, type PendingAuditEvent } from '@vellum/core';
+import { GENESIS_HASH, verifyChain, type PendingAuditEvent } from '@vellum/core';
 import { connectionStringFor, TEST_DATABASE_URL } from './test/db.js';
 import { PgStorageAdapter } from './pg-storage-adapter.js';
+import { readMigrationSql } from './migration.js';
 
 function buildEvent(
   tenantId: string,
@@ -186,6 +187,53 @@ describe('PgStorageAdapter (integration)', () => {
     const afterDrain = await adapter.listOutboxTenants();
     expect(afterDrain).not.toContain(tenantA);
     expect(afterDrain).not.toContain(tenantB);
+  });
+
+  describe('recordCheckpoint', () => {
+    it('records the current head for external anchoring — ARCHITECTURE.md §7', async () => {
+      const tenantId = randomUUID();
+      await adapter.appendInline(buildEvent(tenantId, { action: 'a' }));
+      await adapter.appendInline(buildEvent(tenantId, { action: 'b' }));
+      const third = await adapter.appendInline(buildEvent(tenantId, { action: 'c' }));
+
+      const checkpoint = await adapter.recordCheckpoint(
+        tenantId,
+        's3://evidence-bucket/2026-09-16',
+      );
+      expect(checkpoint).toMatchObject({
+        tenantId,
+        headSeq: 3,
+        headHash: third.rowHash,
+        anchoredRef: 's3://evidence-bucket/2026-09-16',
+      });
+      expect(checkpoint.id).toEqual(expect.any(String));
+    });
+
+    it('checkpoints an empty chain at the genesis hash', async () => {
+      const tenantId = randomUUID();
+      const checkpoint = await adapter.recordCheckpoint(tenantId);
+      expect(checkpoint).toMatchObject({
+        tenantId,
+        headSeq: 0,
+        headHash: GENESIS_HASH,
+        anchoredRef: null,
+      });
+    });
+  });
+
+  it('the migration is safe to re-run against an already-migrated database', async () => {
+    const superuser = new Client({ connectionString: TEST_DATABASE_URL });
+    await superuser.connect();
+    try {
+      await expect(superuser.query(readMigrationSql())).resolves.toBeDefined();
+    } finally {
+      await superuser.end();
+    }
+
+    // The schema still works after a second application — not just "didn't throw".
+    const tenantId = randomUUID();
+    await adapter.appendInline(buildEvent(tenantId));
+    expect(await adapter.readRange(tenantId)).toHaveLength(1);
   });
 
   describe('RLS tenant isolation', () => {

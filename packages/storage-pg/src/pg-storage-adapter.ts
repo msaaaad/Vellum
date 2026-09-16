@@ -7,6 +7,7 @@ import {
   type AuditEvent,
   type ChainHead,
   type ChainRow,
+  type Checkpoint,
   type PendingAuditEvent,
   type ReadRangeOptions,
   type StoragePort,
@@ -37,6 +38,26 @@ interface HeadRow extends QueryResultRow {
 interface OutboxRow extends QueryResultRow {
   id: string;
   payload: PendingAuditEvent;
+}
+
+interface CheckpointRow extends QueryResultRow {
+  id: string;
+  tenant_id: string;
+  head_seq: string;
+  head_hash: string;
+  created_at: Date;
+  anchored_ref: string | null;
+}
+
+function rowToCheckpoint(row: CheckpointRow): Checkpoint {
+  return {
+    id: row.id,
+    tenantId: row.tenant_id,
+    headSeq: Number(row.head_seq),
+    headHash: row.head_hash,
+    createdAt: row.created_at.toISOString(),
+    anchoredRef: row.anchored_ref,
+  };
 }
 
 function rowToChainRow(row: AuditEventRow): ChainRow {
@@ -199,6 +220,20 @@ export class PgStorageAdapter implements StoragePort<PoolClient> {
       [limit],
     );
     return result.rows.map((row) => row.tenant_id);
+  }
+
+  async recordCheckpoint(tenantId: string, anchoredRef: string | null = null): Promise<Checkpoint> {
+    // An empty chain still checkpoints — "at this moment the head was genesis" is a valid,
+    // honest statement (ARCHITECTURE.md §7), and refusing would just push the same call onto
+    // the first real event's caller for no benefit.
+    const head = await this.head(tenantId);
+    const result = await this.pool.query<CheckpointRow>(
+      `INSERT INTO audit_checkpoints (tenant_id, head_seq, head_hash, anchored_ref)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, tenant_id, head_seq, head_hash, created_at, anchored_ref`,
+      [tenantId, head?.seq ?? 0, head?.rowHash ?? GENESIS_HASH, anchoredRef],
+    );
+    return rowToCheckpoint(result.rows[0]!);
   }
 
   private async currentHead(client: PoolClient, tenantId: string): Promise<ChainHead | null> {

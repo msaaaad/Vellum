@@ -20,9 +20,14 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@vellum/core": "workspace:*"
+    "@vellum/core": "workspace:*",
+    "@vellum/storage-pg": "workspace:*",
+    "pdfkit": "^0.15.0",
+    "pg": "^8.22.0"
   },
   "devDependencies": {
+    "@types/pdfkit": "^0.13.4",
+    "@types/pg": "^8.20.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"
   }

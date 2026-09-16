@@ -5,7 +5,13 @@ import { Test } from '@nestjs/testing';
 import { from, lastValueFrom } from 'rxjs';
 import { describe, expect, it } from 'vitest';
 import { GENESIS_HASH, hashEvent, toCanonicalPayload, verifyChain } from '@vellum/core';
-import type { AuditEvent, ChainRow, PendingAuditEvent, StoragePort } from '@vellum/core';
+import type {
+  AuditEvent,
+  ChainRow,
+  Checkpoint,
+  PendingAuditEvent,
+  StoragePort,
+} from '@vellum/core';
 import { AuditWriter } from './audit-writer.service.js';
 import { Audited } from './decorator.js';
 import { withAuditContext } from './context.js';
@@ -48,6 +54,17 @@ class InMemoryStorage implements StoragePort<unknown> {
 
   async listOutboxTenants() {
     return [];
+  }
+
+  async recordCheckpoint(tenantId: string): Promise<Checkpoint> {
+    return {
+      id: 'c1',
+      tenantId,
+      headSeq: this.rows.at(-1)?.seq ?? 0,
+      headHash: this.rows.at(-1)?.rowHash ?? GENESIS_HASH,
+      createdAt: new Date().toISOString(),
+      anchoredRef: null,
+    };
   }
 }
 

@@ -39,6 +39,14 @@ function fakeStorage(overrides: Partial<StoragePort<unknown>> = {}): StoragePort
     enqueue: vi.fn().mockResolvedValue(undefined),
     drainOutbox: vi.fn().mockResolvedValue([]),
     listOutboxTenants: vi.fn().mockResolvedValue([]),
+    recordCheckpoint: vi.fn().mockResolvedValue({
+      id: 'c1',
+      tenantId: 't1',
+      headSeq: 0,
+      headHash: GENESIS_HASH,
+      createdAt: new Date().toISOString(),
+      anchoredRef: null,
+    }),
     ...overrides,
   };
 }
