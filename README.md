@@ -26,6 +26,7 @@ Built for the moment every B2B SaaS eventually hits: an enterprise customer's se
 - [Configuration reference](#configuration-reference)
 - [Two write modes: inline vs outbox](#two-write-modes-inline-vs-outbox)
 - [What Vellum does and does NOT protect against](#what-vellum-does-and-does-not-protect-against)
+- [The tamper test](#the-tamper-test)
 - [Monorepo layout](#monorepo-layout)
 - [Roadmap](#roadmap)
 - [FAQ](#faq)
@@ -328,6 +329,29 @@ Being honest about this is the whole point of an audit tool.
 **How you close that gap** (v1-friendly, roadmap for automation): periodically publish the chain's **head hash** somewhere the app's DB role cannot alter — WORM object storage (S3 Object Lock), a second append-only system, email to auditors, or (later) a public transparency log. Vellum records these as **checkpoints**; once a head hash is anchored externally, no in-DB rewrite can move history behind that point undetected. v1 ships the checkpoint table + a manual `vellum checkpoint` command; automated anchoring is on the roadmap.
 
 The append-only **trigger + grant model** also means the *application* role literally cannot `UPDATE`/`DELETE` the table — only a superuser/table owner can, which narrows the threat to people who already hold the keys to the database.
+
+---
+
+## The tamper test
+
+The whole pitch above is falsifiable — here's the 60-second version:
+
+```bash
+pnpm demo:tamper
+```
+
+What it does, step by step, all against a real Postgres database:
+
+1. **Seeds a real chain** — `examples/ndis-app` creates a participant, grants consent, opens a service agreement, and submits a claim.
+2. **`vellum verify` → `INTACT`** — every hash reproduces, every row links to the last.
+3. **Tampers one row, as a Postgres superuser**, bypassing the append-only trigger the same way a database owner could:
+   ```sql
+   UPDATE audit_events SET changes = '{}' WHERE action = 'consent.granted';
+   ```
+4. **`vellum verify` → `TAMPERED at seq N`** — the exact row, immediately.
+5. **`vellum export --format pdf` → the cover says `FAILED`** — the pack still gets produced; it just can't lie about what it found.
+
+`scripts/tamper-demo.sh` is that script — a real terminal session, not a mockup, meant to be screen-recorded start to finish. `examples/ndis-app/src/tamper-demo.integration.test.ts` runs the same five steps as an automated test, and `apps/dashboard/src/lib/verify.integration.test.ts` proves the dashboard's chain badge flips to ✗ on the same kind of tamper — so both places a human would look (the CLI and the dashboard) catch it, not just one.
 
 ---
 
