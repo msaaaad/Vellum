@@ -16,8 +16,9 @@ Companion: [`README.md`](./README.md) (usage).
                           │    → resolves { tenantId, actor, reqMeta }  │
                           │    → stores in AsyncLocalStorage (ALS)      │
                           │                                             │
-                          │  @Audited() method                          │
-                          │    → AuditInterceptor builds an AuditEvent  │
+                          │  @Audited() method (any service, HTTP-     │
+                          │  triggered or called directly)              │
+                          │    → wrapped method builds an AuditEvent    │
                           │        (action, entity, changes, metadata)  │
                           └───────────────┬─────────────────────────────┘
                                           │
@@ -169,25 +170,23 @@ row_hash = sha256( "0000…0000" + "\n" + JCS(payload) )
 
 ### 4.1 Context propagation
 
-`AuditContextMiddleware` runs `tenantResolver(req)` and `actorResolver(req)`, plus collects request metadata (ip, user-agent, request id, route), and calls `als.run(context, next)`. Everything downstream (interceptor, imperative API) reads the current context from ALS. Outside HTTP (jobs, CLI, seeds) you wrap work in `withAuditContext(ctx, fn)` manually.
+`AuditContextMiddleware` runs `tenantResolver(req)` and `actorResolver(req)`, plus collects request metadata (ip, user-agent, request id, route), and calls `als.run(context, next)`. Everything downstream (`@Audited()`, the imperative API) reads the current context from ALS. Outside HTTP (jobs, CLI, seeds) you wrap work in `withAuditContext(ctx, fn)` manually.
 
-### 4.2 The interceptor
+### 4.2 `@Audited()` — a method-wrapping decorator, not a `NestInterceptor`
 
-`AuditInterceptor` (global or per-controller):
+A NestJS interceptor only ever runs for a controller (or resolver/gateway) method that Nest's own HTTP/RPC/WS dispatch invokes — never for a plain service method called directly from other application code. Since "add one decorator, every call is audited" needs to cover exactly that (a service calling another service, a seed script, a cron job — not only controller endpoints), `@Audited()` wraps the decorated method itself instead. The wrapper runs identically no matter who calls it:
 
-1. Read `@Audited()` options via `Reflector`; if absent, pass through.
-2. Resolve `tenantId` + `actor` from ALS (throw if missing and `action` isn't marked `system`).
-3. If `capture: 'diff'`, call `options.loadBefore(pointcut)` **before** `next.handle()`.
-4. Run the handler → `result`.
+1. `@Audited(options)` replaces the method with a wrapper; `SetMetadata` also records `options` under a reflect-metadata key, for external introspection only — the write path below doesn't read it back.
+2. On each call, resolve `tenantId` + `actor` (and `request`, if any) from the ambient `AuditContext` (ALS) — throw if there is none. `self` is simply `this` at call time; no DI/`ExecutionContext` lookup needed.
+3. If `options.loadBefore` is set, call it **before** running the method, regardless of capture mode.
+4. Run the original method → `result`. Errors propagate *before* any event is written (a failed operation produces no "success" audit; if you want to audit failures, record explicitly in a `catch`).
 5. Build `changes`:
-   - `snapshot` → `{ after: result }`
+   - `snapshot` → `{ after: loadBefore-result if configured, else result }` — the `loadBefore` result is preferred whenever it's configured, since a delete or a revoke-shaped action often can't express "what happened" through its own return value (a delete commonly returns void; a revoke's *return* value is the post-mutation row, but the pre-mutation one is usually the evidence worth keeping).
    - `diff` → `{ before, after: result, diff: computeDiff(before, result) }`
    - `none` → `{}`
 6. Apply redaction (global `redact` ∪ decorator `redact`) to `changes` and `metadata`.
 7. Resolve `entityId`, `metadata`.
-8. Hand the assembled `AuditEvent` to the active **write path** (§4.3 / §4.4).
-
-Errors in the handler are re-thrown *before* any event is written (a failed operation produces no "success" audit; if you want to audit failures, record explicitly in a `catch`).
+8. Hand the assembled `AuditEvent` to the active **write path** (§4.3 / §4.4) via a module-level "active `AuditWriter`" reference — set once, when `AuditModule.forRoot()`/`forRootAsync()` constructs it — since the wrapper, like the ALS context store, has no access to Nest's DI container.
 
 ### 4.3 Inline path
 
@@ -325,7 +324,7 @@ The writer sets `SET LOCAL vellum.tenant_id = '<uuid>'` inside its transaction (
 
 1. `core`: types, JCS wrapper, `hashEvent()`, `verifyChain()` + unit tests (determinism, tamper detection, gap detection).
 2. SQL migration + `storage-pg` adapter implementing `StoragePort` (`appendInline`, `head`, `readRange`, `enqueue`, `drainOutbox`).
-3. `nestjs`: `AuditModule.forRoot`, ALS context + middleware, `@Audited` + interceptor, inline writer.
+3. `nestjs`: `AuditModule.forRoot`, ALS context + middleware, `@Audited` (a method-wrapping decorator), inline writer.
 4. Outbox mode: `enqueue(tx)`, BullMQ worker, exactly-once drain.
 5. `cli`: `migrate`, `verify`, `export` (JSON then PDF), `checkpoint`.
 6. `examples/basic-nestjs` incl. a **tamper test** (superuser `UPDATE` → `verify` fails) — this is the demo that sells it.

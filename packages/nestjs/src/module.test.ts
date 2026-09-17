@@ -3,7 +3,6 @@ import { Test } from '@nestjs/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { PgStorageAdapter } from '@vellum/storage-pg';
 import { AuditContextMiddleware } from './middleware.js';
-import { AuditInterceptor } from './interceptor.js';
 import { AuditModule } from './module.js';
 import { AuditOutboxWorker } from './outbox-worker.service.js';
 import { AuditService } from './audit.service.js';
@@ -44,9 +43,6 @@ describe('AuditModule.forRoot', () => {
     expect(moduleRef.get(AuditContextMiddleware)).toBeInstanceOf(AuditContextMiddleware);
     expect(moduleRef.get(AUDIT_STORAGE)).toBeInstanceOf(PgStorageAdapter);
     expect(moduleRef.get(AUDIT_MODULE_OPTIONS)).toBe(options);
-
-    // Registered globally (APP_INTERCEPTOR), not just available for manual @UseInterceptors().
-    expect(moduleRef.get(AuditInterceptor)).toBeInstanceOf(AuditInterceptor);
   });
 
   it("throws a clear error for storage.adapter 'prisma' (not implemented until storage-prisma ships)", async () => {

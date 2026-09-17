@@ -11,8 +11,8 @@ export interface AuditRequestMeta {
 
 /**
  * What lives in `AsyncLocalStorage` for the duration of a request (or a `withAuditContext`
- * block) — everything downstream (`AuditInterceptor`, `AuditService`) reads tenant/actor from
- * here instead of taking them as parameters, so `tenantId` is never passed by hand.
+ * block) — everything downstream (`@Audited()`, `AuditService`) reads tenant/actor from here
+ * instead of taking them as parameters, so `tenantId` is never passed by hand.
  */
 export interface AuditContext {
   tenantId: string;
@@ -79,8 +79,10 @@ export interface AuditModuleOptions {
 export interface AuditPointcut<TArgs extends unknown[] = unknown[], TResult = unknown> {
   args: TArgs;
   result: TResult;
-  /** The controller/service instance, resolved via `ModuleRef` (assumes default/singleton scope). */
+  /** The instance the method was called on (`this` at call time — see decorator.ts). */
   self: unknown;
+  /** The originating HTTP request, when the call happens inside one — from the ambient
+   * `AuditContext`, so it's present whether or not `self` is a controller. */
   request?: unknown;
   tenantId: string;
   actor: AuditActor;
@@ -96,7 +98,14 @@ export interface AuditedOptions {
   entityId?: (c: AuditPointcut) => string | null | undefined;
   /** @default 'snapshot' */
   capture?: CaptureMode;
-  /** Runs BEFORE the handler; required for `capture: 'diff'` — ARCHITECTURE.md §4.2. */
+  /**
+   * Runs BEFORE the handler, regardless of `capture` — ARCHITECTURE.md §4.2. Required for
+   * `capture: 'diff'` (its result becomes `before`); for `capture: 'snapshot'` it becomes the
+   * snapshot subject instead of the handler's return value, which is the right choice whenever
+   * "what existed" (a delete, or a revoke worth preserving pre-mutation) matters more than
+   * whatever the handler happens to return — DOMAIN_CHECKLIST.md's `delete → snapshot +
+   * loadBefore` pattern.
+   */
   loadBefore?: (c: AuditPointcut) => unknown | Promise<unknown>;
   /** Field paths stripped from this event's `changes`/`metadata`, merged with the global list. */
   redact?: string[];

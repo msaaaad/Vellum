@@ -25,7 +25,9 @@ function requireAuditContext(action: string): AuditContext {
 @Injectable()
 export class AuditService {
   constructor(
-    // @Inject(AuditWriter) explicitly — see the comment on AuditInterceptor's constructor.
+    // @Inject(AuditWriter) explicitly: type-based (paramtypes-metadata) injection needs
+    // `emitDecoratorMetadata`, which only a full `tsc` build reliably emits — esbuild/swc-based
+    // toolchains silently don't, so relying on it would make DI fragile for some consumers.
     @Inject(AuditWriter) private readonly writer: AuditWriter,
     @Inject(AUDIT_MODULE_OPTIONS) private readonly options: AuditModuleOptions,
   ) {}

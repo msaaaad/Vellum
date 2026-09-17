@@ -5,11 +5,9 @@ import {
   type FactoryProvider,
   type Provider,
 } from '@nestjs/common';
-import { APP_INTERCEPTOR } from '@nestjs/core';
 import { AuditWriter } from './audit-writer.service.js';
 import { AuditService } from './audit.service.js';
 import { AuditContextMiddleware } from './middleware.js';
-import { AuditInterceptor } from './interceptor.js';
 import { AuditOutboxWorker } from './outbox-worker.service.js';
 import { buildStorage } from './storage.js';
 import { AUDIT_MODULE_OPTIONS, AUDIT_STORAGE } from './tokens.js';
@@ -32,16 +30,14 @@ const EXPORTS = [
 
 const SHARED_PROVIDERS: Provider[] = [
   { provide: AUDIT_STORAGE, useFactory: buildStorage, inject: [AUDIT_MODULE_OPTIONS] },
+  // AuditWriter's own constructor registers itself as the active writer @Audited() reaches for
+  // (runtime.ts) — nothing needs to inject it explicitly for that to happen, since Nest
+  // instantiates every provider declared here regardless of whether anything else depends on it.
   AuditWriter,
   AuditService,
   AuditContextMiddleware,
-  AuditInterceptor,
   // OnModuleInit no-ops unless mode: 'outbox' — see AuditOutboxWorker's own doc comment.
   AuditOutboxWorker,
-  // Registered globally so the quick-start needs no manual `@UseInterceptors(AuditInterceptor)` —
-  // `useExisting` (not `useClass`) so this shares the one `AuditInterceptor` instance rather than
-  // constructing a second one under the APP_INTERCEPTOR token.
-  { provide: APP_INTERCEPTOR, useExisting: AuditInterceptor },
 ];
 
 /**
