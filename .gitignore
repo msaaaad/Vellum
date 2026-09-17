@@ -8,6 +8,9 @@ coverage/
 .env.*
 !.env.example
 .DS_Store
+.next/
+next-env.d.ts
+*.tsbuildinfo
 
 DOMAIN_CHECKLIST.md
 PROGRESS_LOG.md
