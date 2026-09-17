@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./evidence-pack": {
+      "types": "./dist/evidence-pack.d.ts",
+      "import": "./dist/evidence-pack.js"
     }
   },
   "bin": {

@@ -2,5 +2,29 @@
   "name": "@vellum/dashboard",
   "version": "0.0.0",
   "private": true,
-  "description": "Read-only Next.js dashboard for browsing and verifying audit chains. Scaffolded in Phase 7."
+  "description": "Read-only Next.js dashboard for browsing and verifying audit chains (DOMAIN_CHECKLIST.md Phase 7).",
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@vellum/cli": "workspace:*",
+    "@vellum/core": "workspace:*",
+    "@vellum/storage-pg": "workspace:*",
+    "next": "^14.2.35",
+    "pg": "^8.22.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0"
+  }
 }
