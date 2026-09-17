@@ -42,7 +42,7 @@ Most "audit logs" are a `logs` table anyone with DB access can silently `UPDATE`
 2. **Tenant isolation** — the trail is scoped per organisation with PostgreSQL **Row-Level Security**, enforced at the database, not just in app code. Tenant A can never read tenant B's history.
 3. **Evidence, not just logs** — export a filtered, self-describing pack (JSON + PDF) with a verification result and the chain head hash, ready to hand to an auditor or customer.
 
-It feels native to NestJS (decorators, DI, interceptors, an optional BullMQ worker) and native to Postgres (RLS, an append-only trigger, one migration).
+It feels native to NestJS (decorators, DI, middleware, an optional BullMQ worker) and native to Postgres (RLS, an append-only trigger, one migration).
 
 ---
 
@@ -50,7 +50,7 @@ It feels native to NestJS (decorators, DI, interceptors, an optional BullMQ work
 
 | Capability | Included |
 |---|---|
-| `@Audited()` decorator + interceptor | ✅ |
+| `@Audited()` decorator (works on any method, not just HTTP handlers) | ✅ |
 | Imperative `record()` and transactional `enqueue(tx, …)` API | ✅ |
 | Per-tenant SHA-256 hash chain | ✅ |
 | Row-Level Security tenant isolation | ✅ |
@@ -305,7 +305,7 @@ AuditModule.forRoot({
 
 ## Two write modes: inline vs outbox
 
-**`inline`** — simplest, zero extra infra. The interceptor writes the chained event synchronously after the method succeeds, serialising per-tenant appends with a Postgres advisory lock. Great for getting started and low/medium throughput.
+**`inline`** — simplest, zero extra infra. `@Audited()` writes the chained event synchronously after the method succeeds, serialising per-tenant appends with a Postgres advisory lock. Great for getting started and low/medium throughput.
 *Caveat:* it is not automatically atomic with your business transaction (use the [transactional API](#imperative--transactional-atomic-api) if you need that guarantee).
 
 **`outbox`** — recommended for production. Events land in `audit_outbox` (cheaply, ideally in your business transaction), and a **BullMQ worker** drains them **in order, per tenant**, assigning the sequence + hash and inserting into `audit_events`. This gives you:
@@ -337,7 +337,7 @@ The append-only **trigger + grant model** also means the *application* role lite
 vellum/
 ├─ packages/
 │  ├─ core/            # framework-agnostic: canonicalization, hashing, verifier, types
-│  ├─ nestjs/          # AuditModule, @Audited, interceptor, context, writer, outbox worker
+│  ├─ nestjs/          # AuditModule, @Audited, context, writer, outbox worker
 │  ├─ cli/             # `vellum` — migrate | verify | export | checkpoint
 │  └─ storage-prisma/  # + storage-pg — adapters implementing the StoragePort interface
 ├─ apps/

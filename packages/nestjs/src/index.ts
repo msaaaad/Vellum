@@ -5,7 +5,6 @@ export { redact } from './redact.js';
 export { computeDiff, type Diff } from './diff.js';
 export { Audited } from './decorator.js';
 export { AuditContextMiddleware } from './middleware.js';
-export { AuditInterceptor } from './interceptor.js';
 export { AuditWriter, type BuildPendingInput } from './audit-writer.service.js';
 export { AuditService } from './audit.service.js';
 export { AuditOutboxWorker } from './outbox-worker.service.js';

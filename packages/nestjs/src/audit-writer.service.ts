@@ -6,6 +6,7 @@ import type {
   PendingAuditEvent,
   StoragePort,
 } from '@vellum/core';
+import { setActiveAuditWriter } from './runtime.js';
 import { AUDIT_MODULE_OPTIONS, AUDIT_STORAGE } from './tokens.js';
 import type { AuditModuleOptions } from './types.js';
 
@@ -19,7 +20,7 @@ export interface BuildPendingInput {
 }
 
 /**
- * The write path shared by `AuditInterceptor` and `AuditService` — fills in the fields callers
+ * The write path shared by `@Audited()` and `AuditService` — fills in the fields callers
  * never pass by hand (`occurredAt`, `hashVersion`) and dispatches to the configured mode.
  * `mode: 'inline'` delegates straight to `StoragePort.appendInline`, which already does the
  * advisory-lock → seq → prev_hash → row_hash → insert sequence from ARCHITECTURE.md §4.3.
@@ -29,7 +30,16 @@ export class AuditWriter {
   constructor(
     @Inject(AUDIT_STORAGE) private readonly storage: StoragePort<unknown>,
     @Inject(AUDIT_MODULE_OPTIONS) private readonly options: AuditModuleOptions,
-  ) {}
+  ) {
+    // See runtime.ts's doc comment: @Audited() needs to reach a writer with zero DI access.
+    setActiveAuditWriter(this);
+  }
+
+  /** The global `redact` list from module config — merged with a decorator's own `redact`
+   * option by whatever builds the final redact-path list for one event. */
+  get globalRedact(): string[] {
+    return this.options.redact ?? [];
+  }
 
   buildPending(input: BuildPendingInput): PendingAuditEvent {
     const clock = this.options.clock ?? (() => new Date());

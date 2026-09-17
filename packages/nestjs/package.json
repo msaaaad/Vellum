@@ -2,7 +2,7 @@
   "name": "@vellum/nestjs",
   "version": "0.0.0",
   "private": true,
-  "description": "NestJS integration for Vellum: AuditModule, @Audited(), interceptor, and writers.",
+  "description": "NestJS integration for Vellum: AuditModule, @Audited(), context, and writers.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,8 +22,7 @@
     "@nestjs/common": "^10.4.0",
     "@nestjs/core": "^10.4.0",
     "pg": "^8.22.0",
-    "reflect-metadata": "^0.2.2",
-    "rxjs": "^7.8.0"
+    "reflect-metadata": "^0.2.2"
   },
   "peerDependencies": {
     "bullmq": "^5.0.0"
