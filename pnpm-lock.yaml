@@ -14,6 +14,9 @@ importers:
       '@types/node':
         specifier: ^22.10.0
         version: 22.20.1
+      '@types/pg':
+        specifier: ^8.20.0
+        version: 8.20.3
       dependency-cruiser:
         specifier: ^16.7.0
         version: 16.10.4
@@ -23,6 +26,9 @@ importers:
       globals:
         specifier: ^17.0.0
         version: 17.8.0
+      pg:
+        specifier: ^8.22.0
+        version: 8.22.0
       pnpm:
         specifier: 11.18.0
         version: 11.18.0
@@ -93,6 +99,9 @@ importers:
       '@nestjs/core':
         specifier: ^10.4.0
         version: 10.4.22(@nestjs/common@10.4.22(reflect-metadata@0.2.2)(rxjs@7.8.2))(reflect-metadata@0.2.2)(rxjs@7.8.2)
+      '@vellum/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
       '@vellum/core':
         specifier: workspace:*
         version: link:../../packages/core
@@ -108,9 +117,6 @@ importers:
       reflect-metadata:
         specifier: ^0.2.2
         version: 0.2.2
-      rxjs:
-        specifier: ^7.8.0
-        version: 7.8.2
     devDependencies:
       '@nestjs/testing':
         specifier: ^10.4.0
