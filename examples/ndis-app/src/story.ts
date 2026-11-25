@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { INestApplicationContext } from '@nestjs/common';
-import type { AuditActor } from '@vellum/core';
-import { withAuditContext } from '@vellum/nestjs';
+import type { AuditActor, StoragePort } from '@vellum/core';
+import { AUDIT_STORAGE, withAuditContext } from '@vellum/nestjs';
 import { AuthService } from './access-control/auth.service.js';
 import { RolesService } from './access-control/roles.service.js';
 import { WorkerScreeningService } from './access-control/worker-screening.service.js';
@@ -60,6 +60,9 @@ export async function runFullStory(app: INestApplicationContext, tenantId: strin
     await claims.submit(claim.id);
     await claims.approve(claim.id);
     await claims.pay(claim.id);
+    // Claim transitions use the transactional outbox, which a background worker normally drains.
+    // No worker runs in this one-shot story, so drain here — keeps the claim events in story order.
+    await app.get<StoragePort>(AUDIT_STORAGE).drainOutbox(tenantId, 1000);
 
     const incident = await incidents.report(participant.id, {
       description: 'Minor fall during transport',

@@ -20,7 +20,7 @@ module.exports = {
         'so a cycle back into nestjs/cli/storage-pg would break independent testability.',
       severity: 'error',
       from: { path: '^packages/core' },
-      to: { path: '^packages/(nestjs|cli|storage-pg)' },
+      to: { path: '^packages/(nestjs|cli|storage-pg|storage-prisma)' },
     },
   ],
   options: {

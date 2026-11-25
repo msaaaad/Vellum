@@ -1,0 +1,35 @@
+{
+  "name": "@vellum/storage-prisma",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Prisma StoragePort adapter for Vellum.",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "generate": "prisma generate"
+  },
+  "dependencies": {
+    "@vellum/core": "workspace:*"
+  },
+  "peerDependencies": {
+    "@prisma/client": ">=5.0.0"
+  },
+  "devDependencies": {
+    "@prisma/client": "^6.0.0",
+    "prisma": "^6.0.0",
+    "typescript": "^5.7.0",
+    "vitest": "^2.1.0",
+    "@vellum/storage-pg": "workspace:*",
+    "pg": "^8.22.0",
+    "@types/pg": "^8.20.0"
+  }
+}
