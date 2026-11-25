@@ -24,7 +24,7 @@ run() {
 }
 
 step "0/6 · Bring up Postgres and apply the migration"
-run "docker compose up -d --wait"
+run "docker compose up -d --wait postgres"
 run "$CLI migrate --database-url \"$DATABASE_URL\""
 
 step "1/6 · Build everything (core, storage-pg, nestjs, cli, examples/ndis-app)"

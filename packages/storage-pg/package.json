@@ -1,7 +1,6 @@
 {
   "name": "@vellum/storage-pg",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "description": "node-postgres StoragePort adapter for Vellum.",
   "type": "module",
   "main": "dist/index.js",
@@ -24,5 +23,36 @@
     "@types/pg": "^8.20.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0"
-  }
+  },
+  "license": "MIT",
+  "files": [
+    "dist",
+    "migrations",
+    "!dist/**/*.test.*",
+    "!dist/**/*.map",
+    "README.md",
+    "!dist/test"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msaaaad/Vellum.git",
+    "directory": "packages/storage-pg"
+  },
+  "homepage": "https://github.com/msaaaad/Vellum#readme",
+  "bugs": {
+    "url": "https://github.com/msaaaad/Vellum/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "audit-log",
+    "tamper-evident",
+    "hash-chain",
+    "postgres",
+    "nestjs"
+  ]
 }
