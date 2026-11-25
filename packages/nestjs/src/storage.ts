@@ -1,4 +1,5 @@
 import { PgStorageAdapter } from '@vellum/storage-pg';
+import { PrismaStorageAdapter, type PrismaLike } from '@vellum/storage-prisma';
 import type { StoragePort } from '@vellum/core';
 import type { AuditModuleOptions } from './types.js';
 
@@ -16,10 +17,13 @@ export function buildStorage(options: AuditModuleOptions): StoragePort<unknown> 
   }
 
   if (storage.adapter === 'prisma') {
-    throw new Error(
-      "AuditModule: storage.adapter 'prisma' isn't implemented yet — @vellum/storage-prisma ships " +
-        "later (see DOMAIN_CHECKLIST.md Phase 9). Use adapter: 'pg' for now.",
-    );
+    const client = storage.client?.() as PrismaLike | undefined;
+    if (!client || typeof client.$transaction !== 'function') {
+      throw new Error(
+        "AuditModule: storage.adapter 'prisma' requires storage.client to return a PrismaClient.",
+      );
+    }
+    return new PrismaStorageAdapter(client) as StoragePort<unknown>;
   }
 
   const unknownAdapter: string = (storage as { adapter: string }).adapter;

@@ -2,6 +2,7 @@ import { Pool } from 'pg';
 import { Test } from '@nestjs/testing';
 import { describe, expect, it, vi } from 'vitest';
 import { PgStorageAdapter } from '@vellum/storage-pg';
+import { PrismaStorageAdapter } from '@vellum/storage-prisma';
 import { AuditContextMiddleware } from './middleware.js';
 import { AuditModule } from './module.js';
 import { AuditOutboxWorker } from './outbox-worker.service.js';
@@ -45,7 +46,25 @@ describe('AuditModule.forRoot', () => {
     expect(moduleRef.get(AUDIT_MODULE_OPTIONS)).toBe(options);
   });
 
-  it("throws a clear error for storage.adapter 'prisma' (not implemented until storage-prisma ships)", async () => {
+  it("builds a PrismaStorageAdapter for storage.adapter 'prisma'", async () => {
+    const fakePrisma = {
+      $transaction: async () => undefined,
+      $queryRawUnsafe: async () => [],
+      $executeRawUnsafe: async () => 0,
+    };
+    const options: AuditModuleOptions = {
+      storage: { adapter: 'prisma', client: () => fakePrisma },
+      tenantResolver: () => 't1',
+      actorResolver: () => ({ id: 'u1', type: 'user', label: null }),
+    };
+
+    const moduleRef = await Test.createTestingModule({
+      imports: [AuditModule.forRoot(options)],
+    }).compile();
+    expect(moduleRef.get(AUDIT_STORAGE)).toBeInstanceOf(PrismaStorageAdapter);
+  });
+
+  it("rejects storage.adapter 'prisma' when client() doesn't return a Prisma client", async () => {
     const options: AuditModuleOptions = {
       storage: { adapter: 'prisma', client: () => ({}) },
       tenantResolver: () => 't1',
@@ -54,7 +73,7 @@ describe('AuditModule.forRoot', () => {
 
     await expect(
       Test.createTestingModule({ imports: [AuditModule.forRoot(options)] }).compile(),
-    ).rejects.toThrow(/storage-prisma/);
+    ).rejects.toThrow(/PrismaClient/);
   });
 });
 
