@@ -25,7 +25,7 @@ describe('verifyChain', () => {
 
   it('fails at seq 2 when row 2 is mutated (tamper detection)', () => {
     const rows = threeRowChain();
-    rows[1] = { ...rows[1]!, action: 'participant.deleted' }; // row_hash no longer matches
+    rows[1] = { ...rows[1]!, action: 'participant.deleted' };
 
     const result = verifyChain(rows);
 
@@ -36,7 +36,7 @@ describe('verifyChain', () => {
 
   it('detects a deleted row as a sequence gap', () => {
     const rows = threeRowChain();
-    rows.splice(1, 1); // delete seq 2, leaving [1, 3]
+    rows.splice(1, 1);
 
     const result = verifyChain(rows);
 
@@ -47,19 +47,17 @@ describe('verifyChain', () => {
 
   it('detects reordered rows as a broken link', () => {
     const rows = threeRowChain();
-    [rows[0], rows[1]] = [rows[1]!, rows[0]!]; // swap seq 1 and seq 2 positions
+    [rows[0], rows[1]] = [rows[1]!, rows[0]!];
 
     const result = verifyChain(rows);
 
     expect(result.ok).toBe(false);
-    // seq check fires first since row order no longer matches ascending seq.
     expect(result.brokenAt).toBe(1);
     expect(result.brokenReason).toBe('GAP');
   });
 
   it('detects a broken link when prev_hash is forged to skip tampering', () => {
     const rows = threeRowChain();
-    // Break the link directly without breaking seq contiguity or recomputable hash pairing.
     rows[1] = { ...rows[1]!, prevHash: '1'.repeat(64) };
 
     const result = verifyChain(rows);

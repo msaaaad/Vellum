@@ -4,7 +4,7 @@ import { buildManifest } from './manifest.js';
 
 function fakeRow(seq: number): ChainRow {
   return {
-    tenantId: 't1',
+    tenantId: '00000000-0000-4000-8000-000000000001',
     seq,
     occurredAt: '2026-01-01T00:00:00.000Z',
     actor: { id: 'u1', type: 'user', label: null },
@@ -22,7 +22,7 @@ describe('buildManifest', () => {
   it('derives count from the exported events, not from verify.count', () => {
     const verify: VerifyResult = { ok: true, count: 100, head: 'a'.repeat(64) };
     const manifest = buildManifest({
-      tenantId: 't1',
+      tenantId: '00000000-0000-4000-8000-000000000001',
       from: '2026-01-01',
       to: '2026-06-30',
       events: [fakeRow(1), fakeRow(2)],
@@ -49,7 +49,7 @@ describe('buildManifest', () => {
       brokenReason: 'HASH',
     };
     const manifest = buildManifest({
-      tenantId: 't1',
+      tenantId: '00000000-0000-4000-8000-000000000001',
       from: null,
       to: null,
       events: [fakeRow(1)],
@@ -64,7 +64,7 @@ describe('buildManifest', () => {
   it('defaults the clock to the current time', () => {
     const before = Date.now();
     const manifest = buildManifest({
-      tenantId: 't1',
+      tenantId: '00000000-0000-4000-8000-000000000001',
       from: null,
       to: null,
       events: [],

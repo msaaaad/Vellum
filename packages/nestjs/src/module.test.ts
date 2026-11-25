@@ -10,8 +10,6 @@ import { AuditService } from './audit.service.js';
 import { AUDIT_MODULE_OPTIONS, AUDIT_STORAGE } from './tokens.js';
 import type { AuditModuleOptions } from './types.js';
 
-// Only the outbox-mode lifecycle test below actually triggers AuditOutboxWorker.onModuleInit()
-// (via moduleRef.init()); bullmq is mocked so that doesn't try to open a real Redis connection.
 const addMock = vi.fn().mockResolvedValue(undefined);
 vi.mock('bullmq', () => ({
   Queue: vi
@@ -22,8 +20,6 @@ vi.mock('bullmq', () => ({
     .mockImplementation(() => ({ on: vi.fn(), close: vi.fn().mockResolvedValue(undefined) })),
 }));
 
-// `pg.Pool` never opens a socket until a query runs, so this is safe to construct without a
-// real database — module wiring shouldn't touch the network.
 function dummyPool(): Pool {
   return new Pool();
 }

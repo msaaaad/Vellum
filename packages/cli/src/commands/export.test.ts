@@ -4,7 +4,7 @@ import { filterByDate, parseDateBoundary } from './export.js';
 
 function fakeRow(occurredAt: string): ChainRow {
   return {
-    tenantId: 't1',
+    tenantId: '00000000-0000-4000-8000-000000000001',
     seq: 1,
     occurredAt,
     actor: { id: 'u1', type: 'user', label: null },
@@ -23,7 +23,7 @@ describe('parseDateBoundary', () => {
     expect(parseDateBoundary('2026-06-01', 'start')).toBe('2026-06-01T00:00:00.000Z');
   });
 
-  it('treats a bare date as the last millisecond of the day for the end edge — inclusive of the whole day', () => {
+  it('treats a bare date as the last millisecond of the day for the end edge - inclusive of the whole day', () => {
     expect(parseDateBoundary('2026-06-30', 'end')).toBe('2026-06-30T23:59:59.999Z');
   });
 

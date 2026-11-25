@@ -14,15 +14,15 @@ interface Column {
 }
 
 const COLUMNS: Column[] = [
-  { label: 'Seq', x: 50, width: 35, value: (r) => String(r.seq) },
-  { label: 'Occurred at', x: 85, width: 130, value: (r) => r.occurredAt },
-  { label: 'Actor', x: 215, width: 110, value: (r) => r.actor.label ?? r.actor.id ?? r.actor.type },
-  { label: 'Action', x: 325, width: 130, value: (r) => r.action },
+  { label: 'Seq', x: 50, width: 35, value: (row) => String(row.seq) },
+  { label: 'Occurred at', x: 85, width: 130, value: (row) => row.occurredAt },
+  { label: 'Actor', x: 215, width: 110, value: (row) => row.actor.label ?? row.actor.id ?? row.actor.type },
+  { label: 'Action', x: 325, width: 130, value: (row) => row.action },
   {
     label: 'Entity',
     x: 455,
     width: 95,
-    value: (r) => (r.entity.id ? `${r.entity.type}:${r.entity.id}` : r.entity.type),
+    value: (row) => (row.entity.id ? `${row.entity.type}:${row.entity.id}` : row.entity.type),
   },
 ];
 
@@ -35,11 +35,6 @@ export interface CoverStamp {
   verifyLine: string;
 }
 
-/**
- * The pure decision behind the cover page — kept separate from any pdfkit calls so it's
- * directly unit-testable without generating (or parsing) an actual PDF. `renderEvidencePackPdf`
- * below just draws whatever this returns.
- */
 export function coverStampFor(manifest: ExportManifest): CoverStamp {
   if (manifest.verify.ok) {
     return { label: 'VERIFIED', color: VERIFIED_COLOR, verifyLine: 'INTACT' };
@@ -51,10 +46,6 @@ export function coverStampFor(manifest: ExportManifest): CoverStamp {
   };
 }
 
-/**
- * README "Evidence packs" — a cover page (VERIFIED/FAILED stamp + manifest fields) followed by
- * a readable event table. Resolves once the file is fully flushed to disk.
- */
 export function renderEvidencePackPdf(
   outPath: string,
   manifest: ExportManifest,
@@ -64,8 +55,6 @@ export function renderEvidencePackPdf(
     const doc = new PDFDocument({ margin: 50, size: 'A4' });
     const stream = createWriteStream(outPath);
     stream.on('error', reject);
-    // 'close' (fd actually closed), not 'finish' (buffers merely handed off) — a reader that
-    // opens the file right after 'finish' can otherwise see a not-yet-fully-durable file.
     stream.on('close', resolve);
     doc.pipe(stream);
 
@@ -96,9 +85,9 @@ function drawCoverPage(doc: PDFKit.PDFDocument, manifest: ExportManifest): void 
 
   const fields: Array<[string, string]> = [
     ['Tenant', manifest.tenantId],
-    ['Range', `${manifest.range.from ?? '(full history)'} … ${manifest.range.to ?? 'now'}`],
+    ['Range', `${manifest.range.from ?? '(full history)'} ... ${manifest.range.to ?? 'now'}`],
     ['Event count', String(manifest.count)],
-    ['Chain head', manifest.headHash ?? '(unavailable — chain broken)'],
+    ['Chain head', manifest.headHash ?? '(unavailable - chain broken)'],
     ['Tool version', manifest.toolVersion],
     ['Generated at', manifest.generatedAt],
     ['Verify result', stamp.verifyLine],
@@ -125,8 +114,8 @@ function drawEventTable(doc: PDFKit.PDFDocument, events: ChainRow[]): void {
       y = drawTableHeader(doc);
     }
     doc.font('Helvetica').fontSize(8).fillColor('#000000');
-    for (const col of COLUMNS) {
-      doc.text(col.value(row), col.x, y, { width: col.width, ellipsis: true });
+    for (const column of COLUMNS) {
+      doc.text(column.value(row), column.x, y, { width: column.width, ellipsis: true });
     }
     y += ROW_HEIGHT;
   }
@@ -139,8 +128,8 @@ function drawEventTable(doc: PDFKit.PDFDocument, events: ChainRow[]): void {
 function drawTableHeader(doc: PDFKit.PDFDocument): number {
   const y = TABLE_TOP;
   doc.font('Helvetica-Bold').fontSize(9).fillColor('#000000');
-  for (const col of COLUMNS) {
-    doc.text(col.label, col.x, y, { width: col.width });
+  for (const column of COLUMNS) {
+    doc.text(column.label, column.x, y, { width: column.width });
   }
   doc
     .moveTo(50, y + 12)

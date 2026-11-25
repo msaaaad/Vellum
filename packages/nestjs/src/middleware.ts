@@ -14,7 +14,7 @@ interface RequestLike {
   route?: { path?: string };
 }
 
-function header(req: RequestLike, name: string): string | null {
+function readHeader(req: RequestLike, name: string): string | null {
   const value = req.headers?.[name];
   if (Array.isArray(value)) return value[0] ?? null;
   return value ?? null;
@@ -23,17 +23,12 @@ function header(req: RequestLike, name: string): string | null {
 function extractRequestMeta(req: RequestLike): AuditRequestMeta {
   return {
     ip: req.ip ?? req.ips?.[0] ?? req.socket?.remoteAddress ?? null,
-    userAgent: header(req, 'user-agent'),
-    requestId: header(req, 'x-request-id') ?? randomUUID(),
+    userAgent: readHeader(req, 'user-agent'),
+    requestId: readHeader(req, 'x-request-id') ?? randomUUID(),
     route: req.route?.path ?? req.originalUrl ?? req.url ?? null,
   };
 }
 
-/**
- * README step 3: `consumer.apply(AuditContextMiddleware).forRoutes('*')`. Runs the configured
- * `tenantResolver`/`actorResolver`, collects request metadata (ip/ua/request-id/route), and
- * stashes it all in `AsyncLocalStorage` for the rest of the request — ARCHITECTURE.md §4.1.
- */
 @Injectable()
 export class AuditContextMiddleware implements NestMiddleware {
   constructor(@Inject(AUDIT_MODULE_OPTIONS) private readonly options: AuditModuleOptions) {}

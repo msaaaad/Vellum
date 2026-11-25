@@ -4,10 +4,6 @@ import { GENESIS_HASH } from '@vellum/core';
 import { AuditOutboxWorker } from './outbox-worker.service.js';
 import type { AuditModuleOptions } from './types.js';
 
-// `bullmq` opens a real Redis connection as soon as a Queue/Worker is constructed, so it's
-// mocked out entirely — these tests exercise our own wiring/dispatch logic, not BullMQ itself
-// or a real Redis. `pollMs`/retry-and-backoff options are asserted on the mock call, not by
-// actually waiting for a timer to fire.
 const addMock = vi.fn().mockResolvedValue(undefined);
 const queueCloseMock = vi.fn().mockResolvedValue(undefined);
 const workerCloseMock = vi.fn().mockResolvedValue(undefined);
@@ -74,7 +70,7 @@ afterEach(() => {
 });
 
 describe('AuditOutboxWorker.onModuleInit', () => {
-  it("does nothing for mode: 'inline' (the default) — no Queue/Worker constructed", async () => {
+  it("does nothing for mode: 'inline' (the default) - no Queue/Worker constructed", async () => {
     const worker = new AuditOutboxWorker(fakeStorage(), baseOptions());
     await worker.onModuleInit();
     expect(addMock).not.toHaveBeenCalled();

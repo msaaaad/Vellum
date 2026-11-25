@@ -12,7 +12,7 @@ const COMMANDS: Record<string, (argv: string[]) => Promise<number>> = {
   checkpoint: runCheckpoint,
 };
 
-const HELP = `Vellum — tamper-evident, tenant-scoped audit trails for NestJS + PostgreSQL.
+const HELP = `Vellum - tamper-evident, tenant-scoped audit trails for NestJS + PostgreSQL.
 
 Usage:
   vellum migrate [--database-url <url>]
@@ -26,11 +26,6 @@ Options:
   --version                Show the tool version
 `;
 
-/**
- * The whole CLI, minus process wiring (argv slicing, exit code, stderr formatting) — kept
- * separate from `index.ts` so it's callable directly in tests without spawning a process.
- * Returns the process exit code; never calls `process.exit()` itself.
- */
 export async function run(argv: string[]): Promise<number> {
   const [command, ...rest] = argv;
 

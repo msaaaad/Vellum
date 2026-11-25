@@ -47,18 +47,18 @@ const pendingInput = {
   metadata: {},
 };
 
-describe('AuditWriter.buildPending', () => {
+describe('AuditWriter.buildPendingEvent', () => {
   it('defaults hashVersion to 1 and stamps occurredAt from the clock', () => {
     const clock = () => new Date('2026-01-01T00:00:00.000Z');
     const writer = new AuditWriter(fakeStorage(), baseOptions({ clock }));
-    const pending = writer.buildPending(pendingInput);
+    const pending = writer.buildPendingEvent(pendingInput);
     expect(pending.hashVersion).toBe(1);
     expect(pending.occurredAt).toBe('2026-01-01T00:00:00.000Z');
   });
 
   it('honours a configured hash version', () => {
     const writer = new AuditWriter(fakeStorage(), baseOptions({ hash: { version: 2 } }));
-    expect(writer.buildPending(pendingInput).hashVersion).toBe(2);
+    expect(writer.buildPendingEvent(pendingInput).hashVersion).toBe(2);
   });
 });
 
@@ -66,7 +66,7 @@ describe('AuditWriter.write', () => {
   it('appends inline by default', async () => {
     const storage = fakeStorage();
     const writer = new AuditWriter(storage, baseOptions());
-    const pending = writer.buildPending(pendingInput);
+    const pending = writer.buildPendingEvent(pendingInput);
     const row = await writer.write(pending);
     expect(storage.appendInline).toHaveBeenCalledWith(pending);
     expect(row).toMatchObject({ action: 'thing.done' });
@@ -75,14 +75,14 @@ describe('AuditWriter.write', () => {
   it('rethrows a storage failure when no onError hook is configured', async () => {
     const storage = fakeStorage({ appendInline: vi.fn().mockRejectedValue(new Error('db down')) });
     const writer = new AuditWriter(storage, baseOptions());
-    await expect(writer.write(writer.buildPending(pendingInput))).rejects.toThrow('db down');
+    await expect(writer.write(writer.buildPendingEvent(pendingInput))).rejects.toThrow('db down');
   });
 
   it('routes a storage failure to onError instead of throwing when configured', async () => {
     const onError = vi.fn();
     const storage = fakeStorage({ appendInline: vi.fn().mockRejectedValue(new Error('db down')) });
     const writer = new AuditWriter(storage, baseOptions({ onError }));
-    await expect(writer.write(writer.buildPending(pendingInput))).resolves.toBeUndefined();
+    await expect(writer.write(writer.buildPendingEvent(pendingInput))).resolves.toBeUndefined();
     expect(onError).toHaveBeenCalledWith(
       expect.any(Error),
       expect.objectContaining({ action: 'thing.done' }),
@@ -92,13 +92,12 @@ describe('AuditWriter.write', () => {
   it("mode: 'outbox' queues a standalone (no tx) outbox row instead of appending inline", async () => {
     const storage = fakeStorage();
     const writer = new AuditWriter(storage, baseOptions({ mode: 'outbox' }));
-    const pending = writer.buildPending(pendingInput);
+    const pending = writer.buildPendingEvent(pendingInput);
 
     const result = await writer.write(pending);
 
     expect(storage.enqueue).toHaveBeenCalledWith(undefined, pending);
     expect(storage.appendInline).not.toHaveBeenCalled();
-    // No ChainRow yet — AuditOutboxWorker assigns seq/prevHash/rowHash when it drains this later.
     expect(result).toBeUndefined();
   });
 
@@ -106,7 +105,7 @@ describe('AuditWriter.write', () => {
     const onError = vi.fn();
     const storage = fakeStorage({ enqueue: vi.fn().mockRejectedValue(new Error('db down')) });
     const writer = new AuditWriter(storage, baseOptions({ mode: 'outbox', onError }));
-    await expect(writer.write(writer.buildPending(pendingInput))).resolves.toBeUndefined();
+    await expect(writer.write(writer.buildPendingEvent(pendingInput))).resolves.toBeUndefined();
     expect(onError).toHaveBeenCalledWith(
       expect.any(Error),
       expect.objectContaining({ action: 'thing.done' }),
@@ -119,7 +118,7 @@ describe('AuditWriter.enqueue', () => {
     const storage = fakeStorage();
     const writer = new AuditWriter(storage, baseOptions());
     const tx = { fake: 'tx' };
-    const pending = writer.buildPending(pendingInput);
+    const pending = writer.buildPendingEvent(pendingInput);
     await writer.enqueue(tx, pending);
     expect(storage.enqueue).toHaveBeenCalledWith(tx, pending);
   });

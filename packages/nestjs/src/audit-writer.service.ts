@@ -19,29 +19,20 @@ export interface BuildPendingInput {
   metadata: unknown;
 }
 
-/**
- * The write path shared by `@Audited()` and `AuditService` — fills in the fields callers
- * never pass by hand (`occurredAt`, `hashVersion`) and dispatches to the configured mode.
- * `mode: 'inline'` delegates straight to `StoragePort.appendInline`, which already does the
- * advisory-lock → seq → prev_hash → row_hash → insert sequence from ARCHITECTURE.md §4.3.
- */
 @Injectable()
 export class AuditWriter {
   constructor(
     @Inject(AUDIT_STORAGE) private readonly storage: StoragePort<unknown>,
     @Inject(AUDIT_MODULE_OPTIONS) private readonly options: AuditModuleOptions,
   ) {
-    // See runtime.ts's doc comment: @Audited() needs to reach a writer with zero DI access.
     setActiveAuditWriter(this);
   }
 
-  /** The global `redact` list from module config — merged with a decorator's own `redact`
-   * option by whatever builds the final redact-path list for one event. */
   get globalRedact(): string[] {
     return this.options.redact ?? [];
   }
 
-  buildPending(input: BuildPendingInput): PendingAuditEvent {
+  buildPendingEvent(input: BuildPendingInput): PendingAuditEvent {
     const clock = this.options.clock ?? (() => new Date());
     return {
       hashVersion: this.options.hash?.version ?? 1,
@@ -55,31 +46,24 @@ export class AuditWriter {
     };
   }
 
-  /**
-   * The non-transactional write path: `@Audited()` and `audit.record()` both land here.
-   * `mode: 'inline'` appends synchronously; `mode: 'outbox'` queues a standalone (no caller tx)
-   * outbox row for `AuditOutboxWorker` to chain later — same on-disk chain either way, per
-   * DOMAIN_CHECKLIST.md Phase 4's "config switch produces an identical chain".
-   */
-  async write(pending: PendingAuditEvent): Promise<ChainRow | void> {
+  async write(pendingEvent: PendingAuditEvent): Promise<ChainRow | void> {
     const mode = this.options.mode ?? 'inline';
     try {
       if (mode === 'inline') {
-        return await this.storage.appendInline(pending);
+        return await this.storage.appendInline(pendingEvent);
       }
-      await this.storage.enqueue(undefined, pending);
+      await this.storage.enqueue(undefined, pendingEvent);
       return undefined;
     } catch (err) {
       if (this.options.onError) {
-        this.options.onError(err, pending);
+        this.options.onError(err, pendingEvent);
         return undefined;
       }
       throw err;
     }
   }
 
-  /** The transactional write path: `audit.enqueue(tx, …)` — atomic with the caller's own tx. */
-  async enqueue(tx: unknown, pending: PendingAuditEvent): Promise<void> {
-    await this.storage.enqueue(tx, pending);
+  async enqueue(tx: unknown, pendingEvent: PendingAuditEvent): Promise<void> {
+    await this.storage.enqueue(tx, pendingEvent);
   }
 }

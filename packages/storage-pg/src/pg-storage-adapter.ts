@@ -18,7 +18,7 @@ interface AuditEventRow extends QueryResultRow {
   seq: string;
   occurred_at: Date;
   actor_id: string | null;
-  actor_type: string;
+  actor_type: ActorType;
   actor_label: string | null;
   action: string;
   entity_type: string;
@@ -49,7 +49,7 @@ interface CheckpointRow extends QueryResultRow {
   anchored_ref: string | null;
 }
 
-function rowToCheckpoint(row: CheckpointRow): Checkpoint {
+function mapRowToCheckpoint(row: CheckpointRow): Checkpoint {
   return {
     id: row.id,
     tenantId: row.tenant_id,
@@ -60,14 +60,14 @@ function rowToCheckpoint(row: CheckpointRow): Checkpoint {
   };
 }
 
-function rowToChainRow(row: AuditEventRow): ChainRow {
+function mapRowToChainRow(row: AuditEventRow): ChainRow {
   return {
     tenantId: row.tenant_id,
     seq: Number(row.seq),
     occurredAt: row.occurred_at.toISOString(),
     actor: {
       id: row.actor_id,
-      type: row.actor_type as ActorType,
+      type: row.actor_type,
       label: row.actor_label,
     },
     action: row.action,
@@ -80,129 +80,121 @@ function rowToChainRow(row: AuditEventRow): ChainRow {
   };
 }
 
-/** node-postgres implementation of StoragePort — ARCHITECTURE.md §4. */
 export class PgStorageAdapter implements StoragePort<PoolClient> {
   constructor(private readonly pool: Pool) {}
 
   async head(tenantId: string): Promise<ChainHead | null> {
-    const client = await this.pool.connect();
-    try {
-      await client.query('BEGIN');
-      await client.query("SELECT set_config('vellum.tenant_id', $1, true)", [tenantId]);
-      const result = await this.currentHead(client, tenantId);
-      await client.query('COMMIT');
-      return result;
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
-    }
+    return this.runInTenantTransaction(tenantId, (client) => this.loadCurrentHead(client, tenantId));
   }
 
   async appendInline(event: PendingAuditEvent): Promise<ChainRow> {
-    const client = await this.pool.connect();
-    try {
-      await client.query('BEGIN');
-      await client.query("SELECT set_config('vellum.tenant_id', $1, true)", [event.tenantId]);
-      // Serializes same-tenant appends; different tenants proceed fully in parallel — ARCHITECTURE.md §4.3.
+    return this.runInTenantTransaction(event.tenantId, async (client) => {
       await client.query(
         "SELECT pg_advisory_xact_lock(('x' || substr(md5($1), 1, 16))::bit(64)::bigint)",
         [event.tenantId],
       );
 
-      const last = await this.currentHead(client, event.tenantId);
-      const seq = last ? last.seq + 1 : 1;
-      const prevHash = last ? last.rowHash : GENESIS_HASH;
-      const fullEvent: AuditEvent = { ...event, seq };
-      const rowHash = hashEvent(prevHash, toCanonicalPayload(fullEvent));
+      const currentHead = await this.loadCurrentHead(client, event.tenantId);
+      const seq = currentHead ? currentHead.seq + 1 : 1;
+      const prevHash = currentHead ? currentHead.rowHash : GENESIS_HASH;
+      const sequencedEvent: AuditEvent = { ...event, seq };
+      const rowHash = hashEvent(prevHash, toCanonicalPayload(sequencedEvent));
 
-      await this.insertAuditEventRow(client, fullEvent, prevHash, rowHash);
-      await client.query('COMMIT');
-      return { ...fullEvent, prevHash, rowHash };
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
-    }
+      await this.insertAuditEventRow(client, sequencedEvent, prevHash, rowHash);
+      return { ...sequencedEvent, prevHash, rowHash };
+    });
   }
 
-  async readRange(tenantId: string, options: ReadRangeOptions = {}): Promise<ChainRow[]> {
-    const client = await this.pool.connect();
-    try {
-      await client.query('BEGIN');
-      await client.query("SELECT set_config('vellum.tenant_id', $1, true)", [tenantId]);
-
+  async readRange(tenantId: string, options?: ReadRangeOptions): Promise<ChainRow[]> {
+    return this.runInTenantTransaction(tenantId, async (client) => {
       const conditions = ['tenant_id = $1'];
       const params: unknown[] = [tenantId];
-      if (options.fromSeq !== undefined) {
+      if (options?.fromSeq !== undefined) {
         params.push(options.fromSeq);
         conditions.push(`seq >= $${params.length}`);
       }
-      if (options.toSeq !== undefined) {
+      if (options?.toSeq !== undefined) {
         params.push(options.toSeq);
         conditions.push(`seq <= $${params.length}`);
       }
 
-      const result = await client.query<AuditEventRow>(
+      const queryResult = await client.query<AuditEventRow>(
         `SELECT * FROM audit_events WHERE ${conditions.join(' AND ')} ORDER BY seq ASC`,
         params,
       );
-      await client.query('COMMIT');
-      return result.rows.map(rowToChainRow);
-    } catch (err) {
-      await client.query('ROLLBACK');
-      throw err;
-    } finally {
-      client.release();
-    }
+      return queryResult.rows.map(mapRowToChainRow);
+    });
   }
 
   async enqueue(tx: PoolClient | undefined, event: PendingAuditEvent): Promise<void> {
-    // A single INSERT is already atomic on its own, so a standalone call (no caller tx) can
-    // just run it straight against the pool — no BEGIN/COMMIT needed for one statement.
-    const client = tx ?? this.pool;
-    await client.query('INSERT INTO audit_outbox (tenant_id, payload) VALUES ($1, $2)', [
+    const queryable = tx ?? this.pool;
+    await queryable.query('INSERT INTO audit_outbox (tenant_id, payload) VALUES ($1, $2)', [
       event.tenantId,
       JSON.stringify(event),
     ]);
   }
 
-  async drainOutbox(tenantId: string, batchSize = 100): Promise<ChainRow[]> {
+  async drainOutbox(tenantId: string, batchSize: number): Promise<ChainRow[]> {
+    return this.runInTenantTransaction(tenantId, async (client) => {
+      const pendingResult = await client.query<OutboxRow>(
+        'SELECT id, payload FROM audit_outbox WHERE tenant_id = $1 ORDER BY enqueued_at ASC LIMIT $2',
+        [tenantId, batchSize],
+      );
+      if (pendingResult.rows.length === 0) {
+        return [];
+      }
+
+      const currentHead = await this.loadCurrentHead(client, tenantId);
+      let seq = currentHead?.seq ?? 0;
+      let prevHash = currentHead?.rowHash ?? GENESIS_HASH;
+      const drainedRows: ChainRow[] = [];
+
+      for (const outboxRow of pendingResult.rows) {
+        seq += 1;
+        const sequencedEvent: AuditEvent = { ...outboxRow.payload, seq };
+        const rowHash = hashEvent(prevHash, toCanonicalPayload(sequencedEvent));
+
+        await this.insertAuditEventRow(client, sequencedEvent, prevHash, rowHash);
+        await client.query('DELETE FROM audit_outbox WHERE id = $1', [outboxRow.id]);
+
+        drainedRows.push({ ...sequencedEvent, prevHash, rowHash });
+        prevHash = rowHash;
+      }
+
+      return drainedRows;
+    });
+  }
+
+  async listOutboxTenants(limit: number): Promise<string[]> {
+    const queryResult = await this.pool.query<{ tenant_id: string }>(
+      'SELECT tenant_id FROM audit_outbox GROUP BY tenant_id ORDER BY MIN(enqueued_at) ASC LIMIT $1',
+      [limit],
+    );
+    return queryResult.rows.map((row) => row.tenant_id);
+  }
+
+  async recordCheckpoint(tenantId: string, anchoredRef: string | null): Promise<Checkpoint> {
+    const currentHead = await this.head(tenantId);
+    const queryResult = await this.pool.query<CheckpointRow>(
+      `INSERT INTO audit_checkpoints (tenant_id, head_seq, head_hash, anchored_ref)
+       VALUES ($1, $2, $3, $4)
+       RETURNING id, tenant_id, head_seq, head_hash, created_at, anchored_ref`,
+      [tenantId, currentHead?.seq ?? 0, currentHead?.rowHash ?? GENESIS_HASH, anchoredRef],
+    );
+    return mapRowToCheckpoint(queryResult.rows[0]!);
+  }
+
+  private async runInTenantTransaction<TResult>(
+    tenantId: string,
+    work: (client: PoolClient) => Promise<TResult>,
+  ): Promise<TResult> {
     const client = await this.pool.connect();
     try {
       await client.query('BEGIN');
       await client.query("SELECT set_config('vellum.tenant_id', $1, true)", [tenantId]);
-
-      const pending = await client.query<OutboxRow>(
-        'SELECT id, payload FROM audit_outbox WHERE tenant_id = $1 ORDER BY enqueued_at ASC LIMIT $2',
-        [tenantId, batchSize],
-      );
-      if (pending.rows.length === 0) {
-        await client.query('COMMIT');
-        return [];
-      }
-
-      const last = await this.currentHead(client, tenantId);
-      let seq = last?.seq ?? 0;
-      let prevHash = last?.rowHash ?? GENESIS_HASH;
-      const drained: ChainRow[] = [];
-
-      for (const outboxRow of pending.rows) {
-        seq += 1;
-        const fullEvent: AuditEvent = { ...outboxRow.payload, seq };
-        const rowHash = hashEvent(prevHash, toCanonicalPayload(fullEvent));
-
-        await this.insertAuditEventRow(client, fullEvent, prevHash, rowHash);
-        await client.query('DELETE FROM audit_outbox WHERE id = $1', [outboxRow.id]);
-
-        drained.push({ ...fullEvent, prevHash, rowHash });
-        prevHash = rowHash;
-      }
-
+      const workResult = await work(client);
       await client.query('COMMIT');
-      return drained;
+      return workResult;
     } catch (err) {
       await client.query('ROLLBACK');
       throw err;
@@ -211,38 +203,13 @@ export class PgStorageAdapter implements StoragePort<PoolClient> {
     }
   }
 
-  async listOutboxTenants(limit = 100): Promise<string[]> {
-    // No RLS on audit_outbox (unlike audit_events — ARCHITECTURE.md §7 scopes RLS to the chain
-    // itself), so this deliberately reads across all tenants: it's worker-side infrastructure,
-    // not a tenant-facing read.
-    const result = await this.pool.query<{ tenant_id: string }>(
-      'SELECT tenant_id FROM audit_outbox GROUP BY tenant_id ORDER BY MIN(enqueued_at) ASC LIMIT $1',
-      [limit],
-    );
-    return result.rows.map((row) => row.tenant_id);
-  }
-
-  async recordCheckpoint(tenantId: string, anchoredRef: string | null = null): Promise<Checkpoint> {
-    // An empty chain still checkpoints — "at this moment the head was genesis" is a valid,
-    // honest statement (ARCHITECTURE.md §7), and refusing would just push the same call onto
-    // the first real event's caller for no benefit.
-    const head = await this.head(tenantId);
-    const result = await this.pool.query<CheckpointRow>(
-      `INSERT INTO audit_checkpoints (tenant_id, head_seq, head_hash, anchored_ref)
-       VALUES ($1, $2, $3, $4)
-       RETURNING id, tenant_id, head_seq, head_hash, created_at, anchored_ref`,
-      [tenantId, head?.seq ?? 0, head?.rowHash ?? GENESIS_HASH, anchoredRef],
-    );
-    return rowToCheckpoint(result.rows[0]!);
-  }
-
-  private async currentHead(client: PoolClient, tenantId: string): Promise<ChainHead | null> {
-    const result = await client.query<HeadRow>(
+  private async loadCurrentHead(client: PoolClient, tenantId: string): Promise<ChainHead | null> {
+    const queryResult = await client.query<HeadRow>(
       'SELECT seq, row_hash FROM audit_events WHERE tenant_id = $1 ORDER BY seq DESC LIMIT 1',
       [tenantId],
     );
-    const row = result.rows[0];
-    return row ? { seq: Number(row.seq), rowHash: row.row_hash } : null;
+    const headRow = queryResult.rows[0];
+    return headRow ? { seq: Number(headRow.seq), rowHash: headRow.row_hash } : null;
   }
 
   private async insertAuditEventRow(

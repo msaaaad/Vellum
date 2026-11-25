@@ -35,7 +35,6 @@ describe('toCanonicalPayload', () => {
 describe('canonicalizePayload (JCS)', () => {
   it('sorts keys regardless of input construction order', () => {
     const a = toCanonicalPayload(buildEvent({ seq: 1 }));
-    // Same values, deliberately re-assembled with a different key order.
     const b = {
       metadata: a.metadata,
       changes: a.changes,

@@ -14,9 +14,9 @@ function buildEvent(
     hashVersion: 1,
     tenantId,
     occurredAt: new Date().toISOString(),
-    actor: { id: 'u1', type: 'user', label: 'sam@x.io' },
+    actor: { id: '00000000-0000-4000-8000-000000000002', type: 'user', label: 'sam@x.io' },
     action: 'thing.done',
-    entity: { type: 'Thing', id: 't-1' },
+    entity: { type: 'Thing', id: '00000000-0000-4000-8000-000000000003' },
     changes: {},
     metadata: {},
     ...overrides,
@@ -81,15 +81,13 @@ describe('PgStorageAdapter (integration)', () => {
       client.release();
     }
 
-    // Before the worker runs: the outbox row exists, but there's no audit event yet.
     const beforeDrain = await appPool.query('SELECT 1 FROM audit_outbox WHERE tenant_id = $1', [
       tenantId,
     ]);
     expect(beforeDrain.rowCount).toBe(2);
     expect(await adapter.readRange(tenantId)).toHaveLength(0);
 
-    // The worker runs (drainOutbox is what AuditOutboxWorker's drain tick calls per tenant).
-    const drained = await adapter.drainOutbox(tenantId);
+    const drained = await adapter.drainOutbox(tenantId, 100);
     expect(drained.map((r) => [r.seq, r.action])).toEqual([
       [1, 'outbox.one'],
       [2, 'outbox.two'],
@@ -99,7 +97,6 @@ describe('PgStorageAdapter (integration)', () => {
     const rows = await adapter.readRange(tenantId);
     expect(rows).toHaveLength(2);
 
-    // audit_outbox has no RLS, so no tenant context needs to be set for this check.
     const remaining = await appPool.query('SELECT 1 FROM audit_outbox WHERE tenant_id = $1', [
       tenantId,
     ]);
@@ -113,7 +110,7 @@ describe('PgStorageAdapter (integration)', () => {
       await client.query('BEGIN');
       await client.query("SELECT set_config('vellum.tenant_id', $1, true)", [tenantId]);
       await adapter.enqueue(client, buildEvent(tenantId, { action: 'never.happened' }));
-      await client.query('ROLLBACK'); // business tx failed after enqueue — everything unwinds
+      await client.query('ROLLBACK');
     } finally {
       client.release();
     }
@@ -123,7 +120,7 @@ describe('PgStorageAdapter (integration)', () => {
     ]);
     expect(outboxRow.rowCount).toBe(0);
 
-    const drained = await adapter.drainOutbox(tenantId);
+    const drained = await adapter.drainOutbox(tenantId, 100);
     expect(drained).toEqual([]);
     expect(await adapter.readRange(tenantId)).toHaveLength(0);
   });
@@ -132,10 +129,6 @@ describe('PgStorageAdapter (integration)', () => {
     const tenantA = randomUUID();
     const tenantB = randomUUID();
 
-    // Interleave enqueues for two tenants concurrently — nothing here should let one tenant's
-    // events land in the other's chain, or reorder a tenant's own events relative to each other.
-    // Each tenant's own events are enqueued in sequence (so their order is well defined); the two
-    // tenants run concurrently against each other.
     const enqueueAll = async (tenantId: string, actions: string[]) => {
       for (const action of actions) {
         await adapter.enqueue(undefined, buildEvent(tenantId, { action }));
@@ -146,11 +139,9 @@ describe('PgStorageAdapter (integration)', () => {
       enqueueAll(tenantB, ['b.1', 'b.2']),
     ]);
 
-    // Draining two different tenants concurrently is exactly what happens when a drain tick
-    // processes several pending tenants — ARCHITECTURE.md §5 "cross-tenant: fully parallel".
     const [drainedA, drainedB] = await Promise.all([
-      adapter.drainOutbox(tenantA),
-      adapter.drainOutbox(tenantB),
+      adapter.drainOutbox(tenantA, 100),
+      adapter.drainOutbox(tenantB, 100),
     ]);
 
     expect(drainedA.map((r) => r.action)).toEqual(['a.1', 'a.2', 'a.3']);
@@ -168,7 +159,7 @@ describe('PgStorageAdapter (integration)', () => {
     const tenantId = randomUUID();
     await adapter.enqueue(undefined, buildEvent(tenantId, { action: 'outbox.standalone' }));
 
-    const drained = await adapter.drainOutbox(tenantId);
+    const drained = await adapter.drainOutbox(tenantId, 100);
     expect(drained.map((r) => r.action)).toEqual(['outbox.standalone']);
   });
 
@@ -180,21 +171,21 @@ describe('PgStorageAdapter (integration)', () => {
     await new Promise((r) => setTimeout(r, 5));
     await adapter.enqueue(undefined, buildEvent(tenantB, { action: 'b.one' }));
 
-    const pending = await adapter.listOutboxTenants();
+    const pending = await adapter.listOutboxTenants(100);
     expect(pending).toContain(tenantA);
     expect(pending).toContain(tenantB);
     expect(pending.indexOf(tenantA)).toBeLessThan(pending.indexOf(tenantB));
 
-    await adapter.drainOutbox(tenantA);
-    await adapter.drainOutbox(tenantB);
+    await adapter.drainOutbox(tenantA, 100);
+    await adapter.drainOutbox(tenantB, 100);
 
-    const afterDrain = await adapter.listOutboxTenants();
+    const afterDrain = await adapter.listOutboxTenants(100);
     expect(afterDrain).not.toContain(tenantA);
     expect(afterDrain).not.toContain(tenantB);
   });
 
   describe('recordCheckpoint', () => {
-    it('records the current head for external anchoring — ARCHITECTURE.md §7', async () => {
+    it('records the current head for external anchoring - ARCHITECTURE.md section 7', async () => {
       const tenantId = randomUUID();
       await adapter.appendInline(buildEvent(tenantId, { action: 'a' }));
       await adapter.appendInline(buildEvent(tenantId, { action: 'b' }));
@@ -215,7 +206,7 @@ describe('PgStorageAdapter (integration)', () => {
 
     it('checkpoints an empty chain at the genesis hash', async () => {
       const tenantId = randomUUID();
-      const checkpoint = await adapter.recordCheckpoint(tenantId);
+      const checkpoint = await adapter.recordCheckpoint(tenantId, null);
       expect(checkpoint).toMatchObject({
         tenantId,
         headSeq: 0,
@@ -234,7 +225,6 @@ describe('PgStorageAdapter (integration)', () => {
       await superuser.end();
     }
 
-    // The schema still works after a second application — not just "didn't throw".
     const tenantId = randomUUID();
     await adapter.appendInline(buildEvent(tenantId));
     expect(await adapter.readRange(tenantId)).toHaveLength(1);
@@ -249,7 +239,6 @@ describe('PgStorageAdapter (integration)', () => {
       const client = new Client({ connectionString: connectionStringFor('vellum_app') });
       await client.connect();
       try {
-        // Positive control: tenant A's own context can see its row.
         await client.query('BEGIN');
         await client.query("SELECT set_config('vellum.tenant_id', $1, true)", [tenantA]);
         const ownRows = await client.query('SELECT * FROM audit_events WHERE tenant_id = $1', [
@@ -258,7 +247,6 @@ describe('PgStorageAdapter (integration)', () => {
         expect(ownRows.rowCount).toBe(1);
         await client.query('COMMIT');
 
-        // Tenant B's context must not see tenant A's row, even asking for it by id directly.
         await client.query('BEGIN');
         await client.query("SELECT set_config('vellum.tenant_id', $1, true)", [tenantB]);
         const crossTenantRows = await client.query(
