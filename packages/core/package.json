@@ -1,5 +1,5 @@
 {
-  "name": "@attestly/core",
+  "name": "@getattestly/core",
   "version": "0.1.0",
   "description": "Framework-agnostic canonicalization, hashing, and verification for Attestly audit chains.",
   "type": "module",

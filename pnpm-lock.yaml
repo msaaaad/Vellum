@@ -50,13 +50,13 @@ importers:
 
   apps/dashboard:
     dependencies:
-      '@attestly/cli':
+      '@getattestly/cli':
         specifier: workspace:*
         version: link:../../packages/cli
-      '@attestly/core':
+      '@getattestly/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@attestly/storage-pg':
+      '@getattestly/storage-pg':
         specifier: workspace:*
         version: link:../../packages/storage-pg
       next:
@@ -93,16 +93,16 @@ importers:
 
   examples/ndis-app:
     dependencies:
-      '@attestly/cli':
+      '@getattestly/cli':
         specifier: workspace:*
         version: link:../../packages/cli
-      '@attestly/core':
+      '@getattestly/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@attestly/nestjs':
+      '@getattestly/nestjs':
         specifier: workspace:*
         version: link:../../packages/nestjs
-      '@attestly/storage-pg':
+      '@getattestly/storage-pg':
         specifier: workspace:*
         version: link:../../packages/storage-pg
       '@nestjs/common':
@@ -133,10 +133,10 @@ importers:
 
   packages/cli:
     dependencies:
-      '@attestly/core':
+      '@getattestly/core':
         specifier: workspace:*
         version: link:../core
-      '@attestly/storage-pg':
+      '@getattestly/storage-pg':
         specifier: workspace:*
         version: link:../storage-pg
       pdfkit:
@@ -174,13 +174,13 @@ importers:
 
   packages/nestjs:
     dependencies:
-      '@attestly/core':
+      '@getattestly/core':
         specifier: workspace:*
         version: link:../core
-      '@attestly/storage-pg':
+      '@getattestly/storage-pg':
         specifier: workspace:*
         version: link:../storage-pg
-      '@attestly/storage-prisma':
+      '@getattestly/storage-prisma':
         specifier: workspace:*
         version: link:../storage-prisma
       pg:
@@ -214,7 +214,7 @@ importers:
 
   packages/storage-pg:
     dependencies:
-      '@attestly/core':
+      '@getattestly/core':
         specifier: workspace:*
         version: link:../core
       pg:
@@ -233,11 +233,11 @@ importers:
 
   packages/storage-prisma:
     dependencies:
-      '@attestly/core':
+      '@getattestly/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
-      '@attestly/storage-pg':
+      '@getattestly/storage-pg':
         specifier: workspace:*
         version: link:../storage-pg
       '@prisma/client':

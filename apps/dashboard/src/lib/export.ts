@@ -1,6 +1,6 @@
 import type { Pool } from 'pg';
-import { verifyChain, type ChainRow } from '@attestly/core';
-import { buildManifest, getToolVersion, type ExportManifest } from '@attestly/cli/evidence-pack';
+import { verifyChain, type ChainRow } from '@getattestly/core';
+import { buildManifest, getToolVersion, type ExportManifest } from '@getattestly/cli/evidence-pack';
 import { readTenantChain } from './verify';
 
 export async function buildTenantEvidencePack(

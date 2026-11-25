@@ -1,5 +1,5 @@
 {
-  "name": "@attestly/cli",
+  "name": "@getattestly/cli",
   "version": "0.1.0",
   "description": "attestly CLI: migrate | verify | export | checkpoint.",
   "type": "module",
@@ -23,8 +23,8 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@attestly/core": "workspace:*",
-    "@attestly/storage-pg": "workspace:*",
+    "@getattestly/core": "workspace:*",
+    "@getattestly/storage-pg": "workspace:*",
     "pdfkit": "^0.15.0",
     "pg": "^8.22.0"
   },

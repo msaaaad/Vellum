@@ -1,8 +1,8 @@
 import { Pool } from 'pg';
 import { Test } from '@nestjs/testing';
 import { describe, expect, it, vi } from 'vitest';
-import { PgStorageAdapter } from '@attestly/storage-pg';
-import { PrismaStorageAdapter } from '@attestly/storage-prisma';
+import { PgStorageAdapter } from '@getattestly/storage-pg';
+import { PrismaStorageAdapter } from '@getattestly/storage-prisma';
 import { AuditContextMiddleware } from './middleware.js';
 import { AuditModule } from './module.js';
 import { AuditOutboxWorker } from './outbox-worker.service.js';

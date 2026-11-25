@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
-import { withAuditContext } from '@attestly/nestjs';
+import { withAuditContext } from '@getattestly/nestjs';
 import { createTestRuntime } from '../test-support.js';
 import { WorkerScreeningService } from './worker-screening.service.js';
 

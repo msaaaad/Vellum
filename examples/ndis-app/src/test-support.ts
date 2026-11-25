@@ -1,4 +1,4 @@
-import { AuditService, AuditWriter, type AuditModuleOptions } from '@attestly/nestjs';
+import { AuditService, AuditWriter, type AuditModuleOptions } from '@getattestly/nestjs';
 import {
   GENESIS_HASH,
   hashEvent,
@@ -8,7 +8,7 @@ import {
   type Checkpoint,
   type PendingAuditEvent,
   type StoragePort,
-} from '@attestly/core';
+} from '@getattestly/core';
 
 export class InMemoryStorage implements StoragePort<unknown> {
   rows: ChainRow[] = [];

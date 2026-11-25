@@ -1,5 +1,5 @@
 {
-  "name": "@attestly/nestjs",
+  "name": "@getattestly/nestjs",
   "version": "0.1.0",
   "description": "NestJS integration for Attestly: AuditModule, @Audited(), context, and writers.",
   "type": "module",
@@ -16,10 +16,10 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@attestly/core": "workspace:*",
-    "@attestly/storage-pg": "workspace:*",
+    "@getattestly/core": "workspace:*",
+    "@getattestly/storage-pg": "workspace:*",
     "pg": "^8.22.0",
-    "@attestly/storage-prisma": "workspace:*"
+    "@getattestly/storage-prisma": "workspace:*"
   },
   "peerDependencies": {
     "bullmq": "^5.0.0",

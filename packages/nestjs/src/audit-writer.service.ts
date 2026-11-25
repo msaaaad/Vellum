@@ -5,7 +5,7 @@ import type {
   ChainRow,
   PendingAuditEvent,
   StoragePort,
-} from '@attestly/core';
+} from '@getattestly/core';
 import { setActiveAuditWriter } from './runtime.js';
 import { AUDIT_MODULE_OPTIONS, AUDIT_STORAGE } from './tokens.js';
 import type { AuditModuleOptions } from './types.js';

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Client, Pool } from 'pg';
 import { afterAll, describe, expect, it } from 'vitest';
-import { PgStorageAdapter } from '@attestly/storage-pg';
+import { PgStorageAdapter } from '@getattestly/storage-pg';
 import { connectionStringFor } from './test/db';
 
 describe('vellum_readonly role - DOMAIN_CHECKLIST.md Phase 7', () => {

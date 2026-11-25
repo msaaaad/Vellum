@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import type { INestApplicationContext } from '@nestjs/common';
-import type { AuditActor, StoragePort } from '@attestly/core';
-import { AUDIT_STORAGE, withAuditContext } from '@attestly/nestjs';
+import type { AuditActor, StoragePort } from '@getattestly/core';
+import { AUDIT_STORAGE, withAuditContext } from '@getattestly/nestjs';
 import { AuthService } from './access-control/auth.service.js';
 import { RolesService } from './access-control/roles.service.js';
 import { WorkerScreeningService } from './access-control/worker-screening.service.js';

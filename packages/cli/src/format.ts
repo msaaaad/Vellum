@@ -1,4 +1,4 @@
-import type { BrokenReason, VerifyResult } from '@attestly/core';
+import type { BrokenReason, VerifyResult } from '@getattestly/core';
 
 export function shortHash(hash: string): string {
   return `${hash.slice(0, 6)}...${hash.slice(-4)}`;

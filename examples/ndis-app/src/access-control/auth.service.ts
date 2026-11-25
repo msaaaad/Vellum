@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AuditService } from '@attestly/nestjs';
+import { AuditService } from '@getattestly/nestjs';
 
 @Injectable()
 export class AuthService {

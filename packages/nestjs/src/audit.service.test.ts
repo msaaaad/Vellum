@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { PendingAuditEvent, StoragePort } from '@attestly/core';
-import { GENESIS_HASH } from '@attestly/core';
+import type { PendingAuditEvent, StoragePort } from '@getattestly/core';
+import { GENESIS_HASH } from '@getattestly/core';
 import { AuditWriter } from './audit-writer.service.js';
 import { AuditService } from './audit.service.js';
 import { withAuditContext } from './context.js';

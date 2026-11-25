@@ -77,8 +77,8 @@ That is a much smaller group than "anyone who can run an UPDATE", but it is not 
 ## Try it
 
 ```bash
-pnpm add @attestly/nestjs @attestly/core pg
-pnpm add -D @attestly/cli
+pnpm add @getattestly/nestjs @getattestly/core pg
+pnpm add -D @getattestly/cli
 npx attestly migrate --database-url "$DATABASE_URL"
 ```
 

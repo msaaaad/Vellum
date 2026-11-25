@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { withAuditContext } from '@attestly/nestjs';
+import { withAuditContext } from '@getattestly/nestjs';
 import { createTestRuntime } from '../test-support.js';
 import { RolesService } from './roles.service.js';
 

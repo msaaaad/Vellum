@@ -24,17 +24,17 @@ node - "$TARBALLS" <<'EOF'
 const fs = require('node:fs');
 const path = require('node:path');
 const dir = process.argv[2];
-const file = (n) => 'file:' + path.join(dir, `attestly-${n}-0.1.0.tgz`).replace(/\\/g, '/');
+const file = (n) => 'file:' + path.join(dir, `getattestly-${n}-0.1.0.tgz`).replace(/\\/g, '/');
 const names = ['core', 'storage-pg', 'storage-prisma', 'nestjs', 'cli'];
-const overrides = Object.fromEntries(names.map((n) => [`@attestly/${n}`, file(n)]));
+const overrides = Object.fromEntries(names.map((n) => [`@getattestly/${n}`, file(n)]));
 fs.writeFileSync('package.json', JSON.stringify({
   name: 'fresh-app', version: '0.0.0', private: true, type: 'module',
   dependencies: {
     '@nestjs/common': '^10.4.0', '@nestjs/core': '^10.4.0', '@nestjs/platform-express': '^10.4.0',
     'reflect-metadata': '^0.2.2', rxjs: '^7.8.0', pg: '^8.12.0',
-    '@attestly/nestjs': overrides['@attestly/nestjs'], '@attestly/core': overrides['@attestly/core'],
+    '@getattestly/nestjs': overrides['@getattestly/nestjs'], '@getattestly/core': overrides['@getattestly/core'],
   },
-  devDependencies: { '@attestly/cli': overrides['@attestly/cli'], typescript: '^5.7.0', '@types/node': '^22.0.0', '@types/pg': '^8.11.0' },
+  devDependencies: { '@getattestly/cli': overrides['@getattestly/cli'], typescript: '^5.7.0', '@types/node': '^22.0.0', '@types/pg': '^8.11.0' },
   overrides,
 }, null, 2));
 EOF

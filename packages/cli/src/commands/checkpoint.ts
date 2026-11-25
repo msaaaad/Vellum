@@ -1,5 +1,5 @@
 import { parseArgs } from 'node:util';
-import { PgStorageAdapter } from '@attestly/storage-pg';
+import { PgStorageAdapter } from '@getattestly/storage-pg';
 import { createPool, resolveDatabaseUrl } from '../db.js';
 import { CliError } from '../errors.js';
 

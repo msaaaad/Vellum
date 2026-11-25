@@ -1,6 +1,6 @@
-import { PgStorageAdapter } from '@attestly/storage-pg';
-import { PrismaStorageAdapter, type PrismaLike } from '@attestly/storage-prisma';
-import type { StoragePort } from '@attestly/core';
+import { PgStorageAdapter } from '@getattestly/storage-pg';
+import { PrismaStorageAdapter, type PrismaLike } from '@getattestly/storage-prisma';
+import type { StoragePort } from '@getattestly/core';
 import type { AuditModuleOptions } from './types.js';
 
 export function buildStorage(options: AuditModuleOptions): StoragePort<unknown> {

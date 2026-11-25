@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { Injectable } from '@nestjs/common';
-import { Audited } from '@attestly/nestjs';
+import { Audited } from '@getattestly/nestjs';
 import { InMemoryRepository } from '../in-memory-repository.js';
 import type { Participant } from '../types.js';
 

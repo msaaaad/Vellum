@@ -1,6 +1,6 @@
 # Attestly - NDIS provider example
 
-A runnable demo wiring `@attestly/nestjs` into a small NDIS provider domain - DOMAIN_CHECKLIST.md
+A runnable demo wiring `@getattestly/nestjs` into a small NDIS provider domain - DOMAIN_CHECKLIST.md
 Phase 6. Business records (participants, consents, incidents, roles, worker screenings) live
 in-memory for simplicity; Service Agreements and Claims are real Postgres rows, since Phase 6
 specifically needs a genuine transaction to demonstrate the atomic `enqueue(tx, ...)` API. The

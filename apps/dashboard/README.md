@@ -25,7 +25,7 @@ Open <http://localhost:3000>, enter a tenant id (e.g. one printed by
   one `attestly verify` runs.
 - A **filterable event list** (entity, actor, action, date range), newest first.
 - A **one-click PDF export** button - the exact same evidence pack `attestly export --format pdf`
-  builds (`@attestly/cli/evidence-pack`, not a second implementation).
+  builds (`@getattestly/cli/evidence-pack`, not a second implementation).
 
 `DASHBOARD_DATABASE_URL` defaults to `postgres://vellum_readonly:vellum_test_only@localhost:5432/vellum_test`
 - the same ephemeral password `packages/storage-pg/scripts/setup-test-db.mjs` sets for local

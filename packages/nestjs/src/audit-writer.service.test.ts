@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ChainRow, PendingAuditEvent, StoragePort } from '@attestly/core';
-import { GENESIS_HASH } from '@attestly/core';
+import type { ChainRow, PendingAuditEvent, StoragePort } from '@getattestly/core';
+import { GENESIS_HASH } from '@getattestly/core';
 import { AuditWriter } from './audit-writer.service.js';
 import type { AuditModuleOptions } from './types.js';
 

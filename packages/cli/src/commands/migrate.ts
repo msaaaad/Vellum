@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 import { Client } from 'pg';
-import { readMigrationSql } from '@attestly/storage-pg';
+import { readMigrationSql } from '@getattestly/storage-pg';
 import { resolveDatabaseUrl } from '../db.js';
 import { CliError } from '../errors.js';
 

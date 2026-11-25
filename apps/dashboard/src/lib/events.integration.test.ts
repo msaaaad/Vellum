@@ -1,8 +1,8 @@
 import { randomUUID } from 'node:crypto';
 import { Pool } from 'pg';
 import { afterAll, describe, expect, it } from 'vitest';
-import type { PendingAuditEvent } from '@attestly/core';
-import { PgStorageAdapter } from '@attestly/storage-pg';
+import type { PendingAuditEvent } from '@getattestly/core';
+import { PgStorageAdapter } from '@getattestly/storage-pg';
 import { queryEvents } from './events';
 import { connectionStringFor } from './test/db';
 

@@ -1,5 +1,5 @@
 import type { Pool } from 'pg';
-import type { AuditActor } from '@attestly/core';
+import type { AuditActor } from '@getattestly/core';
 
 export interface AuditRequestMeta {
   ip: string | null;

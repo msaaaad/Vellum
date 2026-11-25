@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Client, Pool } from 'pg';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PgStorageAdapter } from '@attestly/storage-pg';
-import type { PendingAuditEvent } from '@attestly/core';
+import { PgStorageAdapter } from '@getattestly/storage-pg';
+import type { PendingAuditEvent } from '@getattestly/core';
 import { run } from './cli.js';
 import { connectionStringFor, TEST_DATABASE_URL } from './test/db.js';
 

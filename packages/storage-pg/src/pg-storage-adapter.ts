@@ -11,7 +11,7 @@ import {
   type PendingAuditEvent,
   type ReadRangeOptions,
   type StoragePort,
-} from '@attestly/core';
+} from '@getattestly/core';
 
 interface AuditEventRow extends QueryResultRow {
   tenant_id: string;
