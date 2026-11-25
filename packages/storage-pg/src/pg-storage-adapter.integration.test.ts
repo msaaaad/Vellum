@@ -134,12 +134,16 @@ describe('PgStorageAdapter (integration)', () => {
 
     // Interleave enqueues for two tenants concurrently — nothing here should let one tenant's
     // events land in the other's chain, or reorder a tenant's own events relative to each other.
+    // Each tenant's own events are enqueued in sequence (so their order is well defined); the two
+    // tenants run concurrently against each other.
+    const enqueueAll = async (tenantId: string, actions: string[]) => {
+      for (const action of actions) {
+        await adapter.enqueue(undefined, buildEvent(tenantId, { action }));
+      }
+    };
     await Promise.all([
-      adapter.enqueue(undefined, buildEvent(tenantA, { action: 'a.1' })),
-      adapter.enqueue(undefined, buildEvent(tenantB, { action: 'b.1' })),
-      adapter.enqueue(undefined, buildEvent(tenantA, { action: 'a.2' })),
-      adapter.enqueue(undefined, buildEvent(tenantB, { action: 'b.2' })),
-      adapter.enqueue(undefined, buildEvent(tenantA, { action: 'a.3' })),
+      enqueueAll(tenantA, ['a.1', 'a.2', 'a.3']),
+      enqueueAll(tenantB, ['b.1', 'b.2']),
     ]);
 
     // Draining two different tenants concurrently is exactly what happens when a drain tick

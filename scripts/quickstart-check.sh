@@ -1,0 +1,61 @@
+#!/usr/bin/env bash
+# DOMAIN_CHECKLIST.md Phase 9 — "quickstart tested on a fresh app".
+# Packs the publishable packages exactly as npm would ship them, installs the tarballs into a
+# brand-new project OUTSIDE this repo (plain npm, no workspace links), follows the README quick
+# start (migrate -> AuditModule.forRoot -> middleware -> @Audited), makes real HTTP requests, and
+# runs `vellum verify` on the result. Needs Postgres: set DATABASE_URL (default localhost:5432).
+set -euo pipefail
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
+ROOT="$(pwd)"
+
+DATABASE_URL="${DATABASE_URL:-postgres://postgres:postgres@localhost:5432/vellum_test}"
+WORK="$(mktemp -d)"
+trap 'rm -rf "$WORK"' EXIT
+TARBALLS="$WORK/tarballs"
+APP="$WORK/fresh-app"
+mkdir -p "$TARBALLS" "$APP"
+
+echo "── build + pack the publishable packages"
+pnpm build >/dev/null
+PACKAGES="core storage-pg storage-prisma nestjs cli"
+for p in $PACKAGES; do
+  (cd "packages/$p" && pnpm pack --pack-destination "$TARBALLS" >/dev/null)
+done
+
+echo "── create a fresh app and install the tarballs"
+cp -r scripts/quickstart-app/src scripts/quickstart-app/tsconfig.json "$APP/"
+cd "$APP"
+node - "$TARBALLS" <<'EOF'
+const fs = require('node:fs');
+const path = require('node:path');
+const dir = process.argv[2];
+const file = (n) => 'file:' + path.join(dir, `vellum-${n}-0.1.0.tgz`).replace(/\\/g, '/');
+const names = ['core', 'storage-pg', 'storage-prisma', 'nestjs', 'cli'];
+const overrides = Object.fromEntries(names.map((n) => [`@vellum/${n}`, file(n)]));
+fs.writeFileSync('package.json', JSON.stringify({
+  name: 'fresh-app', version: '0.0.0', private: true, type: 'module',
+  dependencies: {
+    '@nestjs/common': '^10.4.0', '@nestjs/core': '^10.4.0', '@nestjs/platform-express': '^10.4.0',
+    'reflect-metadata': '^0.2.2', rxjs: '^7.8.0', pg: '^8.12.0',
+    '@vellum/nestjs': overrides['@vellum/nestjs'], '@vellum/core': overrides['@vellum/core'],
+  },
+  devDependencies: { '@vellum/cli': overrides['@vellum/cli'], typescript: '^5.7.0', '@types/node': '^22.0.0', '@types/pg': '^8.11.0' },
+  overrides,
+}, null, 2));
+EOF
+npm install --no-audit --no-fund --loglevel=error
+
+echo "── README step 1: npx vellum migrate"
+npx vellum migrate --database-url "$DATABASE_URL"
+
+echo "── README steps 2-4: module + middleware + @Audited, then real requests"
+npx tsc -p tsconfig.json
+TENANT_ID="$(node -e 'console.log(crypto.randomUUID())')"
+export TENANT_ID DATABASE_URL
+node dist/main.js
+
+echo "── README: npx vellum verify"
+npx vellum verify --tenant "$TENANT_ID" --database-url "$DATABASE_URL"
+
+echo
+echo "Quickstart check passed: a fresh app got a verified chain from the README steps alone."

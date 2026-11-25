@@ -17,7 +17,10 @@
     "depcruise": "depcruise packages apps examples --config .dependency-cruiser.cjs",
     "db:up": "docker compose up -d",
     "db:down": "docker compose down",
-    "demo:tamper": "bash scripts/tamper-demo.sh"
+    "demo:tamper": "bash scripts/tamper-demo.sh",
+    "example:ndis": "bash scripts/ndis-example.sh",
+    "check:quickstart": "bash scripts/quickstart-check.sh",
+    "release": "pnpm build && pnpm -r publish --access public"
   },
   "devDependencies": {
     "@eslint/js": "^9.15.0",

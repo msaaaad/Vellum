@@ -1,4 +1,10 @@
 # Vellum
+
+[![CI](https://github.com/msaaaad/Vellum/actions/workflows/ci.yml/badge.svg)](https://github.com/msaaaad/Vellum/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+[![node](https://img.shields.io/badge/node-%3E%3D18-339933.svg)](https://nodejs.org)
+[![npm](https://img.shields.io/npm/v/@vellum/nestjs.svg?label=%40vellum%2Fnestjs)](https://www.npmjs.com/package/@vellum/nestjs)
+
 Vellum is the treated animal-skin parchment that legal charters, deeds, and official records were written on for centuries — chosen precisely because it lasts and resists alteration. That's the exact metaphor for this product: a permanent, tamper-evident record. It's short, brandable, and evokes "trusted official record" without being literal like nestjs-audit-log. That said — it's a working name, not a decision.
 > Tamper-evident, tenant-scoped audit trails for NestJS — a drop-in evidence layer that turns "we log stuff" into "we can *prove* what happened."
 
@@ -6,7 +12,7 @@ Vellum is the treated animal-skin parchment that legal charters, deeds, and offi
 
 Built for the moment every B2B SaaS eventually hits: an enterprise customer's security review asks for *"an immutable audit log of all data access and changes"* — and you don't want to build (and defend) that from scratch.
 
-> **Naming note:** `vellum` may be taken on npm — confirm before publishing. Backup names: `attestly`, `sealog`, `ledgermark`, `trailkeep`. The package/CLI names below assume the `vellum` brand; swap as needed.
+> **Naming note:** the unscoped `vellum` name is already taken on npm, so everything ships under the `@vellum/*` scope. The CLI binary is still called `vellum`.
 
 ---
 
@@ -70,11 +76,15 @@ It feels native to NestJS (decorators, DI, middleware, an optional BullMQ worker
 ## Install
 
 ```bash
-pnpm add @vellum/nestjs @vellum/core
+pnpm add @vellum/nestjs @vellum/core pg
 pnpm add -D @vellum/cli
+# using Prisma instead of pg? Vellum only needs your existing client:
+pnpm add @vellum/storage-prisma   # optional, @vellum/nestjs already bundles it
 # outbox mode also needs BullMQ + Redis (you likely already have these)
-pnpm add @nestjs/bullmq bullmq
+pnpm add bullmq
 ```
+
+`@nestjs/common`, `@nestjs/core` and `reflect-metadata` are peer dependencies — your app's own copies are used.
 
 Requires: **NestJS 10+**, **PostgreSQL 14+**, Node 18+. Storage adapter for **Prisma** or **pg** (node-postgres).
 
@@ -82,12 +92,14 @@ Requires: **NestJS 10+**, **PostgreSQL 14+**, Node 18+. Storage adapter for **Pr
 
 ## Quick start (5 minutes)
 
-**1. Run the migration** (creates `audit_events`, indexes, RLS policies, the append-only trigger, and — for outbox mode — `audit_outbox`). Ships as SQL and as a Prisma migration:
+**1. Run the migration** (creates `audit_events`, indexes, RLS policies, the append-only trigger, `audit_outbox` and `audit_checkpoints`). It's plain SQL, safe to re-run, and works the same whether you use `pg` or Prisma:
 
 ```bash
-npx vellum migrate            # applies the SQL migration
-# or copy prisma/migrations/*_vellum_init from @vellum/nestjs into your Prisma setup
+npx vellum migrate --database-url "$DATABASE_URL"
+# or apply node_modules/@vellum/storage-pg/migrations/0001_init.sql with psql
 ```
+
+Run it as a role that can create tables and roles. The migration also creates two roles, `vellum_app` (insert/select only) and `vellum_readonly`; your app should connect as `vellum_app` in production so the database itself refuses `UPDATE` and `DELETE`.
 
 **2. Register the module:**
 
@@ -133,9 +145,14 @@ async updateParticipant(id: string, patch: UpdateParticipantDto) {
 That's it. Every call now writes a chained audit event. Check it:
 
 ```bash
-npx vellum verify --tenant <orgId>
-# ✔ chain intact — 1,284 events, head 9f2c…a71b
+npx vellum verify --tenant <orgId> --database-url "$DATABASE_URL"
+# ✔ every row_hash reproduces from canonical payload + prev_hash
+# RESULT: INTACT   head = 2dd878…1356
 ```
+
+This exact flow runs in CI against a brand-new app installed from the packed tarballs: `pnpm check:quickstart` (see `scripts/quickstart-check.sh`).
+
+**Want to see a bigger example first?** `pnpm example:ndis` starts Postgres, migrates, seeds a realistic NDIS provider story (participants, consent, claims, incidents) and verifies it, in one command.
 
 ---
 
@@ -363,11 +380,12 @@ vellum/
 │  ├─ core/            # framework-agnostic: canonicalization, hashing, verifier, types
 │  ├─ nestjs/          # AuditModule, @Audited, context, writer, outbox worker
 │  ├─ cli/             # `vellum` — migrate | verify | export | checkpoint
-│  └─ storage-prisma/  # + storage-pg — adapters implementing the StoragePort interface
+│  ├─ storage-pg/      # node-postgres StoragePort adapter + the SQL migration
+│  └─ storage-prisma/  # Prisma StoragePort adapter (same behaviour as storage-pg)
 ├─ apps/
 │  └─ dashboard/       # read-only Next.js UI
 ├─ examples/
-│  └─ basic-nestjs/    # runnable demo (participants + consents) with a tamper test
+│  └─ ndis-app/        # runnable NDIS provider demo (`pnpm example:ndis`)
 └─ ARCHITECTURE.md
 ```
 

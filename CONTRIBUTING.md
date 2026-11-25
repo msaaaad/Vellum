@@ -8,6 +8,7 @@ changes to hashing, canonicalization and verification is deliberately high. Read
 
 ```bash
 pnpm install
+pnpm --filter @vellum/storage-prisma generate   # generates the Prisma client the adapter tests use
 pnpm build
 pnpm test                # unit tests, no database needed
 ```
@@ -48,3 +49,17 @@ Small, focused PRs with a description of the *why*. Update `CHANGELOG.md` under 
 
 Anything that lets someone alter the log without detection is a security issue — please report it
 privately to the maintainer rather than in a public issue.
+
+## Releasing
+
+Publishable packages: `@vellum/core`, `@vellum/storage-pg`, `@vellum/storage-prisma`,
+`@vellum/nestjs`, `@vellum/cli` (the dashboard and example are private). They are versioned together.
+
+```bash
+npm login                      # an account that owns the @vellum scope
+pnpm release                   # builds, then publishes in dependency order
+```
+
+Use `pnpm publish` (which `pnpm release` does), not `npm publish`: pnpm rewrites the `workspace:*`
+dependencies to real versions in the published manifests. `pnpm check:quickstart` installs the packed
+packages into a throwaway app first, so run it before releasing.
