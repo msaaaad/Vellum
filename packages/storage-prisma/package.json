@@ -1,7 +1,6 @@
 {
   "name": "@vellum/storage-prisma",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "description": "Prisma StoragePort adapter for Vellum.",
   "type": "module",
   "main": "dist/index.js",
@@ -31,5 +30,39 @@
     "@vellum/storage-pg": "workspace:*",
     "pg": "^8.22.0",
     "@types/pg": "^8.20.0"
-  }
+  },
+  "peerDependenciesMeta": {
+    "@prisma/client": {
+      "optional": true
+    }
+  },
+  "license": "MIT",
+  "files": [
+    "dist",
+    "!dist/**/*.test.*",
+    "!dist/**/*.map",
+    "README.md"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msaaaad/Vellum.git",
+    "directory": "packages/storage-prisma"
+  },
+  "homepage": "https://github.com/msaaaad/Vellum#readme",
+  "bugs": {
+    "url": "https://github.com/msaaaad/Vellum/issues"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "audit-log",
+    "tamper-evident",
+    "hash-chain",
+    "postgres",
+    "nestjs"
+  ]
 }
