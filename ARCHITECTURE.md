@@ -1,4 +1,4 @@
-# Vellum — Architecture (v1)
+# Vellum - Architecture (v1)
 
 This document is the source of truth for *how* Vellum works, precisely enough to build from without guessing. It covers the data model, the hash-chain and canonicalization spec, the two write paths, concurrency/ordering, verification, the threat model, and the key decisions with rationale.
 
@@ -9,36 +9,36 @@ Companion: [`README.md`](./README.md) (usage).
 ## 1. System overview
 
 ```
-                          ┌─────────────────────────────────────────────┐
+                          ┌---------------------------------------------┐
    HTTP request           │  Your NestJS app                            │
-   (JWT: user, org) ─────▶│                                             │
+   (JWT: user, org) -----▶│                                             │
                           │  AuditContextMiddleware                     │
-                          │    → resolves { tenantId, actor, reqMeta }  │
-                          │    → stores in AsyncLocalStorage (ALS)      │
+                          │    -> resolves { tenantId, actor, reqMeta }  │
+                          │    -> stores in AsyncLocalStorage (ALS)      │
                           │                                             │
                           │  @Audited() method (any service, HTTP-     │
                           │  triggered or called directly)              │
-                          │    → wrapped method builds an AuditEvent    │
+                          │    -> wrapped method builds an AuditEvent    │
                           │        (action, entity, changes, metadata)  │
-                          └───────────────┬─────────────────────────────┘
+                          └---------------┬-----------------------------┘
                                           │
                  mode = inline            │            mode = outbox
-             ┌────────────────────────────┴───────────────────────────┐
+             ┌----------------------------┴---------------------------┐
              ▼                                                          ▼
-  AuditWriter.appendInline(event)                        audit_outbox  ◀── enqueue(tx, event)
-    • pg_advisory_xact_lock(tenant)                      (unordered, unhashed)
-    • seq = last+1 ; prev_hash = last.row_hash                  │
-    • row_hash = H(prev_hash, canonical(payload))       BullMQ worker (single writer)
-    • INSERT audit_events                                • per-tenant, in seq of insertion
-             │                                           • assigns seq + prev_hash + row_hash
-             │                                           • INSERT audit_events ; delete outbox row
-             └───────────────────────┬───────────────────────────┘
+  AuditWriter.appendInline(event)                        audit_outbox  ◀-- enqueue(tx, event)
+    - pg_advisory_xact_lock(tenant)                      (unordered, unhashed)
+    - seq = last+1 ; prev_hash = last.row_hash                  │
+    - row_hash = H(prev_hash, canonical(payload))       BullMQ worker (single writer)
+    - INSERT audit_events                                - per-tenant, in seq of insertion
+             │                                           - assigns seq + prev_hash + row_hash
+             │                                           - INSERT audit_events ; delete outbox row
+             └-----------------------┬---------------------------┘
                                      ▼
-                          ┌────────────────────┐        ┌──────────────────────────┐
+                          ┌--------------------┐        ┌--------------------------┐
                           │ audit_events        │        │ vellum verify / export   │
-                          │ (append-only, RLS,  │◀───────│ dashboard (read-only,    │
+                          │ (append-only, RLS,  │◀-------│ dashboard (read-only,    │
                           │  per-tenant chain)  │        │ RLS-scoped role)         │
-                          └────────────────────┘        └──────────────────────────┘
+                          └--------------------┘        └--------------------------┘
 ```
 
 The `core` package owns everything cryptographic (canonicalization, hashing, verification) and has **no framework dependencies**, so it can be reviewed and unit-tested in isolation. `nestjs` wires it into DI; storage adapters implement a `StoragePort`.
@@ -64,8 +64,8 @@ CREATE TABLE audit_events (
   changes      jsonb        NOT NULL DEFAULT '{}',    -- {before, after, diff} (redacted)
   metadata     jsonb        NOT NULL DEFAULT '{}',    -- ip, ua, request_id, route, custom
   hash_version smallint     NOT NULL DEFAULT 1,       -- which canonical scheme produced row_hash
-  prev_hash    char(64)     NOT NULL,                 -- row_hash of (tenant_id, seq-1); genesis = 64×'0'
-  row_hash     char(64)     NOT NULL,                 -- see §3
+  prev_hash    char(64)     NOT NULL,                 -- row_hash of (tenant_id, seq-1); genesis = 64x'0'
+  row_hash     char(64)     NOT NULL,                 -- see section 3
   created_at   timestamptz  NOT NULL DEFAULT now(),   -- DB insert time; NOT hashed
 
   CONSTRAINT audit_events_pkey PRIMARY KEY (id),
@@ -79,7 +79,7 @@ CREATE INDEX audit_events_actor_idx        ON audit_events (tenant_id, actor_id)
 
 Notes:
 - `seq` is the ordering authority *within a tenant*. `created_at`/`occurred_at` are informational and deliberately excluded from ordering to avoid clock-skew ambiguity.
-- `(tenant_id, seq)` is unique — this is what makes concurrent appends safe (a race produces a unique-violation, not a fork).
+- `(tenant_id, seq)` is unique - this is what makes concurrent appends safe (a race produces a unique-violation, not a fork).
 - `created_at` is **not** part of `row_hash` (it's a DB default that verification can't reproduce deterministically). `occurred_at` (captured by the app clock) **is** hashed.
 
 ### 2.2 `audit_outbox` (outbox mode only)
@@ -106,15 +106,15 @@ CREATE TABLE audit_checkpoints (
   head_seq     bigint      NOT NULL,       -- chain head at checkpoint time
   head_hash    char(64)    NOT NULL,
   created_at   timestamptz NOT NULL DEFAULT now(),
-  anchored_ref text                        -- where head_hash was published (S3 key, msg id, …)
+  anchored_ref text                        -- where head_hash was published (S3 key, msg id, ...)
 );
 ```
 
-A checkpoint says "at this moment the chain head was X." Once `head_hash` is published somewhere the app's DB role can't rewrite, history *before* it is frozen (see §7).
+A checkpoint says "at this moment the chain head was X." Once `head_hash` is published somewhere the app's DB role can't rewrite, history *before* it is frozen (see section 7).
 
 ---
 
-## 3. The hash chain — exact specification
+## 3. The hash chain - exact specification
 
 The security of the whole system is one function reproduced identically at write time and verify time. It must be defined to the byte.
 
@@ -125,14 +125,14 @@ For each event, build this object with **exactly these keys** (always present; u
 ```jsonc
 {
   "v": 1,                                  // = hash_version
-  "tenant_id": "6f1e…",
+  "tenant_id": "6f1e...",
   "seq": 843,
   "occurred_at": "2026-07-20T04:21:07.123Z", // RFC3339, UTC, exactly millisecond precision, 'Z'
   "actor": { "id": "u_12", "type": "user", "label": "sam@x.io" }, // nulls allowed inside
   "action": "participant.updated",
   "entity": { "type": "Participant", "id": "p_88" },
-  "changes": { … },                        // already-redacted JSON value
-  "metadata": { … }                        // already-redacted JSON value
+  "changes": { ... },                        // already-redacted JSON value
+  "metadata": { ... }                        // already-redacted JSON value
 }
 ```
 
@@ -145,23 +145,23 @@ Serialize the payload with **RFC 8785 JSON Canonicalization Scheme (JCS)**: keys
 ### 3.3 Row hash
 
 ```
-prev_hash = (seq == 1) ? "0"×64 : row_hash of (tenant_id, seq-1)
+prev_hash = (seq == 1) ? "0"x64 : row_hash of (tenant_id, seq-1)
 message   = prev_hash            // 64 lowercase hex chars, as ASCII
           + "\n"                 // 0x0A separator
           + JCS(payload)         // UTF-8 bytes
 row_hash  = lowercase_hex( SHA-256( message ) )
 ```
 
-That's the entire scheme. `hash_version` is stored per row so the algorithm can evolve (`v: 2`) without invalidating historical verification — the verifier dispatches on each row's version.
+That's the entire scheme. `hash_version` is stored per row so the algorithm can evolve (`v: 2`) without invalidating historical verification - the verifier dispatches on each row's version.
 
 ### 3.4 Worked genesis example
 
 ```
-seq=1, prev_hash = "0000…0000" (64 zeros)
+seq=1, prev_hash = "0000...0000" (64 zeros)
 payload = { v:1, tenant_id:"t1", seq:1, occurred_at:"2026-07-20T00:00:00.000Z",
             actor:{id:null,type:"system",label:null}, action:"tenant.created",
             entity:{type:"Tenant",id:"t1"}, changes:{}, metadata:{} }
-row_hash = sha256( "0000…0000" + "\n" + JCS(payload) )
+row_hash = sha256( "0000...0000" + "\n" + JCS(payload) )
 ```
 
 ---
@@ -172,21 +172,21 @@ row_hash = sha256( "0000…0000" + "\n" + JCS(payload) )
 
 `AuditContextMiddleware` runs `tenantResolver(req)` and `actorResolver(req)`, plus collects request metadata (ip, user-agent, request id, route), and calls `als.run(context, next)`. Everything downstream (`@Audited()`, the imperative API) reads the current context from ALS. Outside HTTP (jobs, CLI, seeds) you wrap work in `withAuditContext(ctx, fn)` manually.
 
-### 4.2 `@Audited()` — a method-wrapping decorator, not a `NestInterceptor`
+### 4.2 `@Audited()` - a method-wrapping decorator, not a `NestInterceptor`
 
-A NestJS interceptor only ever runs for a controller (or resolver/gateway) method that Nest's own HTTP/RPC/WS dispatch invokes — never for a plain service method called directly from other application code. Since "add one decorator, every call is audited" needs to cover exactly that (a service calling another service, a seed script, a cron job — not only controller endpoints), `@Audited()` wraps the decorated method itself instead. The wrapper runs identically no matter who calls it:
+A NestJS interceptor only ever runs for a controller (or resolver/gateway) method that Nest's own HTTP/RPC/WS dispatch invokes - never for a plain service method called directly from other application code. Since "add one decorator, every call is audited" needs to cover exactly that (a service calling another service, a seed script, a cron job - not only controller endpoints), `@Audited()` wraps the decorated method itself instead. The wrapper runs identically no matter who calls it:
 
-1. `@Audited(options)` replaces the method with a wrapper; `SetMetadata` also records `options` under a reflect-metadata key, for external introspection only — the write path below doesn't read it back.
-2. On each call, resolve `tenantId` + `actor` (and `request`, if any) from the ambient `AuditContext` (ALS) — throw if there is none. `self` is simply `this` at call time; no DI/`ExecutionContext` lookup needed.
+1. `@Audited(options)` replaces the method with a wrapper; `SetMetadata` also records `options` under a reflect-metadata key, for external introspection only - the write path below doesn't read it back.
+2. On each call, resolve `tenantId` + `actor` (and `request`, if any) from the ambient `AuditContext` (ALS) - throw if there is none. `self` is simply `this` at call time; no DI/`ExecutionContext` lookup needed.
 3. If `options.loadBefore` is set, call it **before** running the method, regardless of capture mode.
-4. Run the original method → `result`. Errors propagate *before* any event is written (a failed operation produces no "success" audit; if you want to audit failures, record explicitly in a `catch`).
+4. Run the original method -> `result`. Errors propagate *before* any event is written (a failed operation produces no "success" audit; if you want to audit failures, record explicitly in a `catch`).
 5. Build `changes`:
-   - `snapshot` → `{ after: loadBefore-result if configured, else result }` — the `loadBefore` result is preferred whenever it's configured, since a delete or a revoke-shaped action often can't express "what happened" through its own return value (a delete commonly returns void; a revoke's *return* value is the post-mutation row, but the pre-mutation one is usually the evidence worth keeping).
-   - `diff` → `{ before, after: result, diff: computeDiff(before, result) }`
-   - `none` → `{}`
-6. Apply redaction (global `redact` ∪ decorator `redact`) to `changes` and `metadata`.
+   - `snapshot` -> `{ after: loadBefore-result if configured, else result }` - the `loadBefore` result is preferred whenever it's configured, since a delete or a revoke-shaped action often can't express "what happened" through its own return value (a delete commonly returns void; a revoke's *return* value is the post-mutation row, but the pre-mutation one is usually the evidence worth keeping).
+   - `diff` -> `{ before, after: result, diff: computeDiff(before, result) }`
+   - `none` -> `{}`
+6. Apply redaction (global `redact` union decorator `redact`) to `changes` and `metadata`.
 7. Resolve `entityId`, `metadata`.
-8. Hand the assembled `AuditEvent` to the active **write path** (§4.3 / §4.4) via a module-level "active `AuditWriter`" reference — set once, when `AuditModule.forRoot()`/`forRootAsync()` constructs it — since the wrapper, like the ALS context store, has no access to Nest's DI container.
+8. Hand the assembled `AuditEvent` to the active **write path** (section 4.3 / section 4.4) via a module-level "active `AuditWriter`" reference - set once, when `AuditModule.forRoot()`/`forRootAsync()` constructs it - since the wrapper, like the ALS context store, has no access to Nest's DI container.
 
 ### 4.3 Inline path
 
@@ -197,9 +197,9 @@ appendInline(event):
     last := SELECT seq, row_hash FROM audit_events
             WHERE tenant_id = $1 ORDER BY seq DESC LIMIT 1
     seq        := (last?.seq ?? 0) + 1
-    prev_hash  := last?.row_hash ?? "0"×64
+    prev_hash  := last?.row_hash ?? "0"x64
     row_hash   := H(prev_hash, canonical(event, seq))
-    INSERT audit_events(… seq, prev_hash, row_hash …)
+    INSERT audit_events(... seq, prev_hash, row_hash ...)
   commit
 ```
 
@@ -210,7 +210,7 @@ The advisory lock is keyed on the tenant, so different tenants append fully in p
 **Enqueue** (in the caller's transaction, so it's atomic with the business change):
 
 ```
-enqueue(tx, event):  INSERT INTO audit_outbox(tenant_id, payload) VALUES (…)
+enqueue(tx, event):  INSERT INTO audit_outbox(tenant_id, payload) VALUES (...)
 ```
 
 **Worker** (single consumer per queue; processes a tenant's rows in `enqueued_at` order):
@@ -224,12 +224,12 @@ for batch of outbox rows (grouped by tenant, ordered by enqueued_at):
       INSERT audit_events
       DELETE audit_outbox row
     commit
-  (BullMQ retries the batch on failure; deletes happen only on commit → at-least-once
+  (BullMQ retries the batch on failure; deletes happen only on commit -> at-least-once
    becomes exactly-once because re-processing a still-present outbox row just re-chains it,
    and an already-deleted row won't be reprocessed.)
 ```
 
-Because the worker is the **sole writer** in outbox mode, sequencing needs no advisory lock — ordering comes from single-threaded processing per tenant. This is why outbox both scales the hot path and simplifies correctness.
+Because the worker is the **sole writer** in outbox mode, sequencing needs no advisory lock - ordering comes from single-threaded processing per tenant. This is why outbox both scales the hot path and simplifies correctness.
 
 ---
 
@@ -238,7 +238,7 @@ Because the worker is the **sole writer** in outbox mode, sequencing needs no ad
 - **Ordering authority:** `seq`, assigned at chain-append time (inline: under the tenant lock; outbox: by the single worker). Never derived from wall-clock time.
 - **Cross-tenant:** fully parallel in both modes.
 - **Within-tenant:** serialised (lock in inline; single worker in outbox).
-- **Crash safety:** outbox insert is atomic with the business tx; the worker's append+delete is atomic. A crash mid-worker re-processes the surviving outbox rows — idempotent because a row is deleted only after its `audit_events` insert commits.
+- **Crash safety:** outbox insert is atomic with the business tx; the worker's append+delete is atomic. A crash mid-worker re-processes the surviving outbox rows - idempotent because a row is deleted only after its `audit_events` insert commits.
 - **Clock skew:** irrelevant to integrity; only affects the informational `occurred_at`.
 
 ---
@@ -250,7 +250,7 @@ verify(tenant_id, from?, to?):
   rows := SELECT * FROM audit_events WHERE tenant_id = $1
           [AND seq BETWEEN from AND to] ORDER BY seq ASC
   expect_seq := from ?? 1
-  expect_prev := (from && from>1) ? rows[0].prev_hash : "0"×64   -- anchor when ranged
+  expect_prev := (from && from>1) ? rows[0].prev_hash : "0"x64   -- anchor when ranged
   for row in rows:
     assert row.seq == expect_seq            else GAP at expect_seq
     assert row.prev_hash == expect_prev     else LINK break at row.seq
@@ -269,13 +269,13 @@ For a *ranged* verification the first row's `prev_hash` is trusted as an anchor;
 
 | Threat | Caught? | Mechanism |
 |---|---|---|
-| App code edits/deletes a past row | ✅ | append-only grants + trigger block it; if bypassed, chain breaks |
-| Rogue one-off `UPDATE`/`DELETE` via app role | ✅ | trigger raises; RLS + no grants |
-| Deleting a middle row | ✅ | `seq` gap + broken link |
-| Reordering rows | ✅ | `prev_hash` links won't match |
-| Cross-tenant read | ✅ | RLS policy on `tenant_id` |
-| **Full chain rewrite by DB owner/superuser** | ⚠️ **only with anchoring** | recomputing every hash forward is internally consistent — external checkpoint needed |
-| Secret leakage into the log | 🚫 mitigated | `redact`; hash is over the redacted stored form |
+| App code edits/deletes a past row | yes | append-only grants + trigger block it; if bypassed, chain breaks |
+| Rogue one-off `UPDATE`/`DELETE` via app role | yes | trigger raises; RLS + no grants |
+| Deleting a middle row | yes | `seq` gap + broken link |
+| Reordering rows | yes | `prev_hash` links won't match |
+| Cross-tenant read | yes | RLS policy on `tenant_id` |
+| **Full chain rewrite by DB owner/superuser** | warning: **only with anchoring** | recomputing every hash forward is internally consistent - external checkpoint needed |
+| Secret leakage into the log | mitigated | `redact`; hash is over the redacted stored form |
 
 **Append-only enforcement:**
 
@@ -284,7 +284,7 @@ For a *ranged* verification the first row's `prev_hash` is trusted as an anchor;
 REVOKE UPDATE, DELETE, TRUNCATE ON audit_events FROM app_role;
 GRANT  INSERT, SELECT           ON audit_events TO   app_role;
 
--- belt-and-suspenders trigger (a superuser can still drop it — hence anchoring)
+-- belt-and-suspenders trigger (a superuser can still drop it - hence anchoring)
 CREATE FUNCTION vellum_forbid_mutation() RETURNS trigger LANGUAGE plpgsql AS $$
 BEGIN RAISE EXCEPTION 'audit_events is append-only'; END $$;
 CREATE TRIGGER vellum_no_mutation BEFORE UPDATE OR DELETE ON audit_events
@@ -304,7 +304,7 @@ CREATE POLICY vellum_tenant_write ON audit_events FOR INSERT
 
 The writer sets `SET LOCAL vellum.tenant_id = '<uuid>'` inside its transaction (mirrors a standard per-request RLS setup). The dashboard uses a **separate read-only role** with only `SELECT`.
 
-**The honest summary:** Vellum makes tampering *evident* for anyone below full-database-owner, and — once you anchor head hashes externally (v1: manual `vellum checkpoint`; v1.1: automated) — evident even against a database owner for all history before the anchor. It is not a blockchain and doesn't pretend to be; it's a pragmatic, auditable evidence layer.
+**The honest summary:** Vellum makes tampering *evident* for anyone below full-database-owner, and - once you anchor head hashes externally (v1: manual `vellum checkpoint`; v1.1: automated) - evident even against a database owner for all history before the anchor. It is not a blockchain and doesn't pretend to be; it's a pragmatic, auditable evidence layer.
 
 ---
 
@@ -327,7 +327,7 @@ The writer sets `SET LOCAL vellum.tenant_id = '<uuid>'` inside its transaction (
 3. `nestjs`: `AuditModule.forRoot`, ALS context + middleware, `@Audited` (a method-wrapping decorator), inline writer.
 4. Outbox mode: `enqueue(tx)`, BullMQ worker, exactly-once drain.
 5. `cli`: `migrate`, `verify`, `export` (JSON then PDF), `checkpoint`.
-6. `examples/basic-nestjs` incl. a **tamper test** (superuser `UPDATE` → `verify` fails) — this is the demo that sells it.
+6. `examples/basic-nestjs` incl. a **tamper test** (superuser `UPDATE` -> `verify` fails) - this is the demo that sells it.
 7. `apps/dashboard`: read-only list/filter, verify badge, export button.
 8. `storage-prisma` adapter; polish; README badges; publish.
 

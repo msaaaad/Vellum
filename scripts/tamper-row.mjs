@@ -1,11 +1,4 @@
 #!/usr/bin/env node
-// DOMAIN_CHECKLIST.md Phase 8 — the tamper step, standalone and scriptable (used by
-// tamper-demo.sh, and runnable on its own). Bypasses the append-only trigger the same way a
-// database owner could — ARCHITECTURE.md §7's honest threat model: "a determined actor with
-// full database ownership... a self-contained in-DB chain is tamper-evident against partial
-// edits, not tamper-proof against a total rewrite." Only a superuser connection can even get
-// this far; the app role's grants never include UPDATE/DELETE at all (packages/storage-pg's
-// migration), and the trigger blocks a superuser too until it's explicitly disabled.
 import { Client } from 'pg';
 
 const [, , tenantId, databaseUrl] = process.argv;
@@ -36,7 +29,7 @@ try {
   );
 
   if (result.rowCount === 0) {
-    console.error('  No consent.granted row found for that tenant — seed a chain first.');
+    console.error('  No consent.granted row found for that tenant - seed a chain first.');
     process.exitCode = 1;
   } else {
     console.log(`  Tampered row: seq ${result.rows[0].seq}.`);
