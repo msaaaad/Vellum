@@ -5,6 +5,8 @@ versions follow [SemVer](https://semver.org/) once published.
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-25
+
 ### Added
 
 - `storage.adapter: 'prisma'` now works in `AuditModule.forRoot` (it used to throw "not implemented").
