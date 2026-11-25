@@ -19,4 +19,4 @@ const storage = new PrismaStorageAdapter(new PrismaClient());
 
 Apply the schema once with `npx attestly migrate --database-url "$DATABASE_URL"`.
 
-Part of [Attestly](https://github.com/msaaaad/Vellum): tamper-evident, tenant-scoped audit trails for NestJS and PostgreSQL. Full documentation, quick start and example app are in the main repository.
+Part of [Attestly](https://github.com/msaaaad/attestly): tamper-evident, tenant-scoped audit trails for NestJS and PostgreSQL. Full documentation, quick start and example app are in the main repository.

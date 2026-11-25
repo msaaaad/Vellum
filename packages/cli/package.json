@@ -1,6 +1,6 @@
 {
   "name": "@getattestly/cli",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "attestly CLI: migrate | verify | export | checkpoint.",
   "type": "module",
   "main": "dist/index.js",
@@ -43,12 +43,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/msaaaad/Vellum.git",
+    "url": "git+https://github.com/msaaaad/attestly.git",
     "directory": "packages/cli"
   },
-  "homepage": "https://github.com/msaaaad/Vellum#readme",
+  "homepage": "https://github.com/msaaaad/attestly#readme",
   "bugs": {
-    "url": "https://github.com/msaaaad/Vellum/issues"
+    "url": "https://github.com/msaaaad/attestly/issues"
   },
   "engines": {
     "node": ">=18"

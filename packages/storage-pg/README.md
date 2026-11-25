@@ -19,4 +19,4 @@ const storage = new PgStorageAdapter(new Pool({ connectionString: process.env.DA
 
 Apply the schema once with `npx attestly migrate --database-url "$DATABASE_URL"`, or run `migrations/0001_init.sql` from this package with psql.
 
-Part of [Attestly](https://github.com/msaaaad/Vellum): tamper-evident, tenant-scoped audit trails for NestJS and PostgreSQL. Full documentation, quick start and example app are in the main repository.
+Part of [Attestly](https://github.com/msaaaad/attestly): tamper-evident, tenant-scoped audit trails for NestJS and PostgreSQL. Full documentation, quick start and example app are in the main repository.

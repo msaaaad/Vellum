@@ -29,4 +29,4 @@ async updateParticipant(id: string, patch: UpdateParticipantDto) {}
 
 Register `AuditContextMiddleware` for your routes so the decorator can read the tenant and actor. Then check the chain with `npx attestly verify --tenant <id> --database-url "$DATABASE_URL"`.
 
-Part of [Attestly](https://github.com/msaaaad/Vellum): tamper-evident, tenant-scoped audit trails for NestJS and PostgreSQL. Full documentation, quick start and example app are in the main repository.
+Part of [Attestly](https://github.com/msaaaad/attestly): tamper-evident, tenant-scoped audit trails for NestJS and PostgreSQL. Full documentation, quick start and example app are in the main repository.
