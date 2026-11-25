@@ -11,12 +11,10 @@ export interface AuditEntity {
   id: string | null;
 }
 
-/** The fields needed to canonicalize and hash one chain row. */
 export interface AuditEvent {
   hashVersion: number;
   tenantId: string;
   seq: number;
-  /** RFC3339 timestamp; normalized to UTC millisecond precision before hashing. */
   occurredAt: string;
   actor: AuditActor;
   action: string;
@@ -25,22 +23,13 @@ export interface AuditEvent {
   metadata: unknown;
 }
 
-/** A stored chain row: an AuditEvent plus the hashes that link it into the chain. */
 export interface ChainRow extends AuditEvent {
   prevHash: string;
   rowHash: string;
 }
 
-/**
- * An event queued for the outbox before it has a chain position. `seq` (and therefore
- * `prevHash`/`rowHash`) is assigned later, when the worker drains it — ARCHITECTURE.md §2.2.
- */
 export type PendingAuditEvent = Omit<AuditEvent, 'seq'>;
 
-/**
- * The exact object hashed for a row — ARCHITECTURE.md §3.1.
- * Key set is fixed; absent optionals are `null`, never omitted.
- */
 export interface CanonicalPayload {
   v: number;
   tenant_id: string;

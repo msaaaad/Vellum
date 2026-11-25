@@ -1,8 +1,8 @@
 # Vellum Dashboard
 
-Read-only Next.js app for browsing and verifying audit chains — DOMAIN_CHECKLIST.md Phase 7.
+Read-only Next.js app for browsing and verifying audit chains - DOMAIN_CHECKLIST.md Phase 7.
 Every read goes through the `vellum_readonly` Postgres role, which the migration
-(`packages/storage-pg/migrations/0001_init.sql`) grants `SELECT` only on `audit_events` — no
+(`packages/storage-pg/migrations/0001_init.sql`) grants `SELECT` only on `audit_events` - no
 `INSERT`/`UPDATE`/`DELETE` grants exist for it at all, checked directly in
 `src/lib/db.integration.test.ts`.
 
@@ -21,20 +21,20 @@ pnpm dev
 Open <http://localhost:3000>, enter a tenant id (e.g. one printed by
 `examples/ndis-app`'s `pnpm seed`), and you get:
 
-- A **chain badge** — verified ✓ / tampered ✗ — from a real full-chain `verifyChain()`, the same
+- A **chain badge** - verified [ok] / tampered [x] - from a real full-chain `verifyChain()`, the same
   one `vellum verify` runs.
 - A **filterable event list** (entity, actor, action, date range), newest first.
-- A **one-click PDF export** button — the exact same evidence pack `vellum export --format pdf`
+- A **one-click PDF export** button - the exact same evidence pack `vellum export --format pdf`
   builds (`@vellum/cli/evidence-pack`, not a second implementation).
 
 `DASHBOARD_DATABASE_URL` defaults to `postgres://vellum_readonly:vellum_test_only@localhost:5432/vellum_test`
-— the same ephemeral password `packages/storage-pg/scripts/setup-test-db.mjs` sets for local
+- the same ephemeral password `packages/storage-pg/scripts/setup-test-db.mjs` sets for local
 dev/test. Set it yourself to point elsewhere.
 
 ## Tests
 
 ```bash
-pnpm test                    # fast unit tests — no database needed
+pnpm test                    # fast unit tests - no database needed
 pnpm test:integration        # needs pnpm db:up + the migration above
 ```
 

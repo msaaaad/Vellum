@@ -5,8 +5,8 @@ import { createTestRuntime } from '../test-support.js';
 import { ParticipantsService } from './participants.service.js';
 
 const ctx = {
-  tenantId: 't1',
-  actor: { id: 'u1', type: 'user' as const, label: 'sam@x.io' },
+  tenantId: '00000000-0000-4000-8000-000000000001',
+  actor: { id: '00000000-0000-4000-8000-000000000002', type: 'user' as const, label: 'sam@x.io' },
   requestMeta: { ip: null, userAgent: null, requestId: null, route: null },
 };
 

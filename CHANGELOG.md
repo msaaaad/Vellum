@@ -19,6 +19,13 @@ versions follow [SemVer](https://semver.org/) once published.
 - `LICENSE` (MIT), `CONTRIBUTING.md`, this changelog.
 - `VELLUM_PG_PORT` / `VELLUM_REDIS_PORT` overrides in `docker-compose.yml`.
 
+### Changed
+
+- `StoragePort.drainOutbox`, `listOutboxTenants` and `recordCheckpoint` now take their batch size, limit and
+  anchored reference explicitly instead of hiding defaults inside each adapter.
+- CLI report output uses ASCII markers (`[ok]`, `[x]`, `->`) instead of Unicode glyphs.
+- Source comments removed in favour of names and ARCHITECTURE.md; test fixtures use UUID-shaped ids.
+
 ### Fixed
 
 - Flaky `storage-pg` outbox test: it enqueued one tenant's events concurrently and then asserted
@@ -33,5 +40,5 @@ versions follow [SemVer](https://semver.org/) once published.
 
 ## Pre-release history
 
-Phases 0–8 (core hashing/verification, Postgres storage, NestJS integration, CLI + evidence packs,
+Phases 0-8 (core hashing/verification, Postgres storage, NestJS integration, CLI + evidence packs,
 NDIS example domain, read-only dashboard, tamper-test demo) are described in `PROGRESS_LOG.md`.

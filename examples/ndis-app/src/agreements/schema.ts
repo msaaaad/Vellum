@@ -1,11 +1,5 @@
 import type { Pool } from 'pg';
 
-/**
- * This example's own tiny business schema — separate from Vellum's `audit_events`/`audit_outbox`
- * migration (packages/storage-pg/migrations/0001_init.sql). No RLS/append-only enforcement here:
- * these are ordinary application tables, not the audit trail. Idempotent, like Vellum's own
- * migration, so re-running the seed script against an already-set-up database is safe.
- */
 const SCHEMA_SQL = `
 CREATE TABLE IF NOT EXISTS example_service_agreements (
   id               uuid        NOT NULL PRIMARY KEY,

@@ -5,8 +5,8 @@ import { createTestRuntime } from '../test-support.js';
 import { ConsentService } from './consent.service.js';
 
 const ctx = {
-  tenantId: 't1',
-  actor: { id: 'u1', type: 'user' as const, label: 'sam@x.io' },
+  tenantId: '00000000-0000-4000-8000-000000000001',
+  actor: { id: '00000000-0000-4000-8000-000000000002', type: 'user' as const, label: 'sam@x.io' },
   requestMeta: { ip: null, userAgent: null, requestId: null, route: null },
 };
 
@@ -50,8 +50,6 @@ describe('ConsentService', () => {
 
     const row = storage.rows[1]!;
     expect(row.action).toBe('consent.revoked');
-    // The pre-revoke snapshot still shows status: 'granted' — that's the point: it preserves what
-    // was originally granted, not the post-revoke row.
     expect(row.changes).toMatchObject({ after: { status: 'granted', method: 'written' } });
     expect(row.changes).not.toHaveProperty('after.signatureImage');
     expect(row.metadata).toMatchObject({ reason: 'participant withdrew consent' });
@@ -69,7 +67,7 @@ describe('ConsentService', () => {
     expect(storage.rows[1]!.changes).toEqual({});
   });
 
-  it('a grant -> revoke lifecycle reads cleanly in order (DOMAIN_CHECKLIST.md §6.1)', async () => {
+  it('a grant -> revoke lifecycle reads cleanly in order (DOMAIN_CHECKLIST.md section 6.1)', async () => {
     const { storage, service } = setup();
 
     await withAuditContext(ctx, async () => {

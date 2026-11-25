@@ -4,8 +4,8 @@ import { createTestRuntime } from '../test-support.js';
 import { RolesService } from './roles.service.js';
 
 const ctx = {
-  tenantId: 't1',
-  actor: { id: 'u1', type: 'user' as const, label: 'sam@x.io' },
+  tenantId: '00000000-0000-4000-8000-000000000001',
+  actor: { id: '00000000-0000-4000-8000-000000000002', type: 'user' as const, label: 'sam@x.io' },
   requestMeta: { ip: null, userAgent: null, requestId: null, route: null },
 };
 
@@ -19,20 +19,28 @@ describe('RolesService', () => {
     const { storage, service } = setup();
 
     const role = await withAuditContext(ctx, () =>
-      service.assign('worker-1', 'support-coordinator', 'admin-1'),
+      service.assign(
+        '00000000-0000-4000-8000-000000000005',
+        'support-coordinator',
+        '00000000-0000-4000-8000-000000000008',
+      ),
     );
 
     const row = storage.rows[0]!;
     expect(row.action).toBe('role.assigned');
     expect(row.changes).toEqual({ after: role });
-    expect(row.metadata).toMatchObject({ assignedBy: 'admin-1' });
+    expect(row.metadata).toMatchObject({ assignedBy: '00000000-0000-4000-8000-000000000008' });
   });
 
   it('role.revoked is a diff against the pre-revoke record', async () => {
     const { storage, service } = setup();
 
     const role = await withAuditContext(ctx, () =>
-      service.assign('worker-1', 'support-coordinator', 'admin-1'),
+      service.assign(
+        '00000000-0000-4000-8000-000000000005',
+        'support-coordinator',
+        '00000000-0000-4000-8000-000000000008',
+      ),
     );
     await withAuditContext(ctx, () => service.revoke(role.id, 'admin-2'));
 

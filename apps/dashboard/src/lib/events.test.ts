@@ -3,24 +3,29 @@ import { buildEventsQuery, DEFAULT_PAGE_SIZE } from './events';
 
 describe('buildEventsQuery', () => {
   it('always scopes to the tenant, with no other filters applied', () => {
-    const { sql, params } = buildEventsQuery('t1', {});
-    expect(sql).toContain('WHERE tenant_id = $1');
-    expect(sql).not.toContain('entity_type');
-    expect(sql).not.toContain('actor_id');
-    expect(sql).not.toContain('action =');
-    expect(params).toEqual(['t1', DEFAULT_PAGE_SIZE, 0]);
+    const { sql, params } = buildEventsQuery('00000000-0000-4000-8000-000000000001', {});
+    const whereClause = sql.slice(sql.indexOf('WHERE'), sql.indexOf('ORDER BY'));
+    expect(whereClause).toBe('WHERE tenant_id = $1 ');
+    expect(params).toEqual(['00000000-0000-4000-8000-000000000001', DEFAULT_PAGE_SIZE, 0]);
   });
 
   it('adds an entity_type condition when given', () => {
-    const { sql, params } = buildEventsQuery('t1', { entityType: 'Participant' });
+    const { sql, params } = buildEventsQuery('00000000-0000-4000-8000-000000000001', {
+      entityType: 'Participant',
+    });
     expect(sql).toContain('entity_type = $2');
-    expect(params).toEqual(['t1', 'Participant', DEFAULT_PAGE_SIZE, 0]);
+    expect(params).toEqual([
+      '00000000-0000-4000-8000-000000000001',
+      'Participant',
+      DEFAULT_PAGE_SIZE,
+      0,
+    ]);
   });
 
   it('combines entity/actor/action/date filters, in a stable parameter order', () => {
-    const { sql, params } = buildEventsQuery('t1', {
+    const { sql, params } = buildEventsQuery('00000000-0000-4000-8000-000000000001', {
       entityType: 'Consent',
-      actorId: 'u1',
+      actorId: '00000000-0000-4000-8000-000000000002',
       action: 'consent.granted',
       from: '2026-01-01T00:00:00.000Z',
       to: '2026-06-30T23:59:59.999Z',
@@ -32,9 +37,9 @@ describe('buildEventsQuery', () => {
     expect(sql).toContain('occurred_at >= $5');
     expect(sql).toContain('occurred_at <= $6');
     expect(params).toEqual([
-      't1',
+      '00000000-0000-4000-8000-000000000001',
       'Consent',
-      'u1',
+      '00000000-0000-4000-8000-000000000002',
       'consent.granted',
       '2026-01-01T00:00:00.000Z',
       '2026-06-30T23:59:59.999Z',
@@ -43,20 +48,26 @@ describe('buildEventsQuery', () => {
     ]);
   });
 
-  it('orders by seq descending — most recent first', () => {
-    const { sql } = buildEventsQuery('t1', {});
+  it('orders by seq descending - most recent first', () => {
+    const { sql } = buildEventsQuery('00000000-0000-4000-8000-000000000001', {});
     expect(sql).toContain('ORDER BY seq DESC');
   });
 
   it('respects a custom limit/offset', () => {
-    const { sql, params } = buildEventsQuery('t1', { limit: 10, offset: 20 });
+    const { sql, params } = buildEventsQuery('00000000-0000-4000-8000-000000000001', {
+      limit: 10,
+      offset: 20,
+    });
     expect(sql).toMatch(/LIMIT \$2 OFFSET \$3/);
-    expect(params).toEqual(['t1', 10, 20]);
+    expect(params).toEqual(['00000000-0000-4000-8000-000000000001', 10, 20]);
   });
 
   it('ignores empty-string filter values, same as absent ones', () => {
-    const { sql } = buildEventsQuery('t1', { entityType: '', actorId: undefined });
-    expect(sql).not.toContain('entity_type');
-    expect(sql).not.toContain('actor_id');
+    const { sql } = buildEventsQuery('00000000-0000-4000-8000-000000000001', {
+      entityType: '',
+      actorId: undefined,
+    });
+    const whereClause = sql.slice(sql.indexOf('WHERE'), sql.indexOf('ORDER BY'));
+    expect(whereClause).toBe('WHERE tenant_id = $1 ');
   });
 });

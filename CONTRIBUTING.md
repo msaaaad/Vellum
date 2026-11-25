@@ -1,6 +1,6 @@
 # Contributing to Vellum
 
-Thanks for helping. Vellum is a trust-critical library — a tamper-evident audit log — so the bar for
+Thanks for helping. Vellum is a trust-critical library - a tamper-evident audit log - so the bar for
 changes to hashing, canonicalization and verification is deliberately high. Read
 [`ARCHITECTURE.md`](./ARCHITECTURE.md) first; it is the spec.
 
@@ -38,7 +38,7 @@ pnpm lint && pnpm typecheck && pnpm depcruise && pnpm test && pnpm test:integrat
   `StoragePort` and are tested against the same behaviours (RLS, append-only, per-tenant
   serialization, outbox atomicity). A new adapter needs the equivalent suite.
 - **Say what is and isn't protected.** If a change alters the threat model, update the
-  "does and does NOT protect against" section of the README and ARCHITECTURE.md §7.
+  "does and does NOT protect against" section of the README and ARCHITECTURE.md section 7.
 - Add a test for every behaviour change; a tamper-detection change needs a test that fails without it.
 
 ## Commits and PRs
@@ -47,7 +47,7 @@ Small, focused PRs with a description of the *why*. Update `CHANGELOG.md` under 
 
 ## Security issues
 
-Anything that lets someone alter the log without detection is a security issue — please report it
+Anything that lets someone alter the log without detection is a security issue - please report it
 privately to the maintainer rather than in a public issue.
 
 ## Releasing

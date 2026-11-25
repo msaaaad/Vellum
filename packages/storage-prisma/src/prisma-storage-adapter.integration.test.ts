@@ -8,7 +8,6 @@ import { PrismaStorageAdapter, type PrismaQueryable } from './prisma-storage-ada
 
 const ADMIN_URL =
   process.env.DATABASE_URL ?? 'postgres://postgres:postgres@localhost:5432/vellum_test';
-/** Set on the test roles by `setup-test-db.mjs` — an ephemeral test value, not a secret. */
 const TEST_ROLE_PASSWORD = 'vellum_test_only';
 
 function urlFor(role: string): string {
@@ -26,16 +25,15 @@ function buildEvent(
     hashVersion: 1,
     tenantId,
     occurredAt: new Date().toISOString(),
-    actor: { id: 'u1', type: 'user', label: 'sam@x.io' },
+    actor: { id: '00000000-0000-4000-8000-000000000002', type: 'user', label: 'sam@x.io' },
     action: 'thing.done',
-    entity: { type: 'Thing', id: 't-1' },
+    entity: { type: 'Thing', id: '00000000-0000-4000-8000-000000000003' },
     changes: { name: { from: 'a', to: 'b' } },
     metadata: { reason: 'because' },
     ...overrides,
   };
 }
 
-/** Same behavioural contract as PgStorageAdapter's suite — the two adapters must be interchangeable. */
 describe('PrismaStorageAdapter (integration)', () => {
   let prisma: PrismaClient;
   let adapter: PrismaStorageAdapter;
@@ -103,7 +101,7 @@ describe('PrismaStorageAdapter (integration)', () => {
     expect(await adapter.readRange(tenantId)).toHaveLength(0);
     expect(await adapter.listOutboxTenants(1000)).toContain(tenantId);
 
-    const drained = await adapter.drainOutbox(tenantId);
+    const drained = await adapter.drainOutbox(tenantId, 100);
     expect(drained.map((r) => [r.seq, r.action])).toEqual([
       [1, 'outbox.one'],
       [2, 'outbox.two'],
@@ -111,7 +109,7 @@ describe('PrismaStorageAdapter (integration)', () => {
     expect(verifyChain(drained).ok).toBe(true);
     expect(await adapter.readRange(tenantId)).toHaveLength(2);
     expect(await adapter.listOutboxTenants(1000)).not.toContain(tenantId);
-    expect(await adapter.drainOutbox(tenantId)).toEqual([]);
+    expect(await adapter.drainOutbox(tenantId, 100)).toEqual([]);
   });
 
   it('a rolled-back business transaction leaves no outbox row and no audit event (atomicity)', async () => {
@@ -123,7 +121,7 @@ describe('PrismaStorageAdapter (integration)', () => {
       }),
     ).rejects.toThrow('business logic failed');
 
-    expect(await adapter.drainOutbox(tenantId)).toEqual([]);
+    expect(await adapter.drainOutbox(tenantId, 100)).toEqual([]);
     expect(await adapter.readRange(tenantId)).toHaveLength(0);
     expect(await adapter.listOutboxTenants(1000)).not.toContain(tenantId);
   });
@@ -131,7 +129,7 @@ describe('PrismaStorageAdapter (integration)', () => {
   it('enqueue without a tx does a standalone insert', async () => {
     const tenantId = randomUUID();
     await adapter.enqueue(undefined, buildEvent(tenantId, { action: 'standalone' }));
-    const drained = await adapter.drainOutbox(tenantId);
+    const drained = await adapter.drainOutbox(tenantId, 100);
     expect(drained.map((r) => r.action)).toEqual(['standalone']);
   });
 
@@ -153,7 +151,7 @@ describe('PrismaStorageAdapter (integration)', () => {
 
   it('recordCheckpoint records the head (and genesis for an empty chain)', async () => {
     const tenantId = randomUUID();
-    const empty = await adapter.recordCheckpoint(tenantId);
+    const empty = await adapter.recordCheckpoint(tenantId, null);
     expect(empty.headSeq).toBe(0);
     expect(empty.headHash).toBe('0'.repeat(64));
 

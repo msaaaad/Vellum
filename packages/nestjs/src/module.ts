@@ -30,21 +30,12 @@ const EXPORTS = [
 
 const SHARED_PROVIDERS: Provider[] = [
   { provide: AUDIT_STORAGE, useFactory: buildStorage, inject: [AUDIT_MODULE_OPTIONS] },
-  // AuditWriter's own constructor registers itself as the active writer @Audited() reaches for
-  // (runtime.ts) — nothing needs to inject it explicitly for that to happen, since Nest
-  // instantiates every provider declared here regardless of whether anything else depends on it.
   AuditWriter,
   AuditService,
   AuditContextMiddleware,
-  // OnModuleInit no-ops unless mode: 'outbox' — see AuditOutboxWorker's own doc comment.
   AuditOutboxWorker,
 ];
 
-/**
- * Wires Vellum into a NestJS app — README "Quick start". `@Global()` so one `forRoot()` in the
- * root module is enough: `AuditContextMiddleware`/`AuditService` resolve in every feature module
- * without re-importing `AuditModule` everywhere.
- */
 @Global()
 @Module({})
 export class AuditModule {

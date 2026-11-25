@@ -10,10 +10,8 @@ describe('readMigrationSql', () => {
     expect(sql).toContain('ENABLE ROW LEVEL SECURITY');
   });
 
-  it('is idempotent SQL — safe to run against an already-migrated database', () => {
+  it('is idempotent SQL - safe to run against an already-migrated database', () => {
     const sql = readMigrationSql();
-    // Every CREATE TABLE/POLICY/TRIGGER is guarded; this is what makes `vellum migrate` safe
-    // to run more than once (README/ARCHITECTURE.md both promise this).
     expect(sql).not.toMatch(/CREATE TABLE(?! IF NOT EXISTS)/);
     expect(sql).toMatch(/DROP POLICY IF EXISTS/);
     expect(sql).toMatch(/DROP TRIGGER IF EXISTS/);

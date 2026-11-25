@@ -13,8 +13,6 @@ import { withAuditContext } from './context.js';
 import { Audited } from './decorator.js';
 import type { AuditModuleOptions } from './types.js';
 
-/** A minimal, real (not mocked) StoragePort — so the event that comes out is genuinely
- * verifiable, not just "the decorator called something". */
 class InMemoryStorage implements StoragePort<unknown> {
   rows: ChainRow[] = [];
 
@@ -73,8 +71,6 @@ function baseOptions(overrides: Partial<AuditModuleOptions> = {}): AuditModuleOp
 
 const OLD_NAME = 'Old Name';
 
-// `this` inside a decorator-factory argument is evaluated at class-definition time (before any
-// instance exists), so resolvers close over module-level state / their own args, not `this`.
 @Injectable()
 class ParticipantsService {
   @Audited({
@@ -111,8 +107,6 @@ class DeletableParticipantsService {
     metadata: (c) => ({ reason: (c.args[1] as { reason: string }).reason }),
   })
   async deleteParticipant(_id: string, _opts: { reason: string }): Promise<void> {
-    // Deliberately returns nothing — a delete handler commonly does. The snapshot has to come
-    // from loadBefore, since by the time this resolves there's no "after" state left to return.
   }
 }
 
@@ -127,7 +121,7 @@ const ctx = {
   },
 };
 
-describe('@Audited() — a real method-wrapping decorator, not a NestInterceptor', () => {
+describe('@Audited() - a real method-wrapping decorator, not a NestInterceptor', () => {
   it('produces exactly one correct, verifiable event for a plain, directly-called service method', async () => {
     const storage = new InMemoryStorage();
     new AuditWriter(storage, baseOptions());
@@ -141,15 +135,12 @@ describe('@Audited() — a real method-wrapping decorator, not a NestInterceptor
       }),
     );
 
-    // The method's own return value passes through untouched.
     expect(result).toEqual({
       id: 'p1',
       name: 'New Name',
       signatureImage: 'data:image/png;base64,xyz',
     });
 
-    // Exactly one event was written, and it verifies as an intact chain — no HTTP request, no
-    // controller, no ExecutionContext involved anywhere in this test.
     expect(storage.rows).toHaveLength(1);
     expect(verifyChain(storage.rows)).toMatchObject({ ok: true, count: 1 });
 
@@ -159,15 +150,12 @@ describe('@Audited() — a real method-wrapping decorator, not a NestInterceptor
     expect(row.tenantId).toBe('t1');
     expect(row.actor).toEqual({ id: 'u1', type: 'user', label: 'sam@x.io' });
 
-    // Diff capture: before/after/diff, with the redacted field stripped from all three places
-    // it could leak (before, after, and the diff itself).
     expect(row.changes).toEqual({
       before: { id: 'p1', name: 'Old Name' },
       after: { id: 'p1', name: 'New Name' },
       diff: { name: ['Old Name', 'New Name'] },
     });
 
-    // Request metadata (from the ambient AuditContext) + the decorator's own metadata resolver.
     expect(row.metadata).toEqual({
       ip: '127.0.0.1',
       userAgent: 'vitest',
@@ -196,7 +184,6 @@ describe('@Audited() — a real method-wrapping decorator, not a NestInterceptor
     new AuditWriter(storage, baseOptions());
     const service = new ParticipantsService();
 
-    // No withAuditContext at all — if this were somehow intercepted, it would throw.
     expect(service.plainMethod()).toBe('not audited');
     expect(storage.rows).toHaveLength(0);
   });

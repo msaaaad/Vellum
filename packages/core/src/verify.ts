@@ -4,20 +4,15 @@ import { hashEvent } from './hash.js';
 import type { ChainRow, VerifyResult } from './types.js';
 
 export interface VerifyChainOptions {
-  /** Set when verifying a ranged slice; the first row's prev_hash is trusted as the anchor. */
   fromSeq?: number;
 }
 
-/**
- * Recomputes every hash and checks the chain is contiguous and unbroken —
- * ARCHITECTURE.md §6. `rows` must already be ordered by seq ascending.
- */
-export function verifyChain(rows: ChainRow[], options: VerifyChainOptions = {}): VerifyResult {
+export function verifyChain(rows: ChainRow[], options?: VerifyChainOptions): VerifyResult {
   if (rows.length === 0) {
     return { ok: true, count: 0, head: null };
   }
 
-  const { fromSeq } = options;
+  const fromSeq = options?.fromSeq;
   let expectSeq = fromSeq ?? 1;
   let expectPrev = fromSeq !== undefined && fromSeq > 1 ? rows[0]!.prevHash : GENESIS_HASH;
 
@@ -29,8 +24,8 @@ export function verifyChain(rows: ChainRow[], options: VerifyChainOptions = {}):
       return { ok: false, count: rows.length, head: null, brokenAt: row.seq, brokenReason: 'LINK' };
     }
 
-    const recomputed = hashEvent(row.prevHash, toCanonicalPayload(row));
-    if (recomputed !== row.rowHash) {
+    const recomputedHash = hashEvent(row.prevHash, toCanonicalPayload(row));
+    if (recomputedHash !== row.rowHash) {
       return { ok: false, count: rows.length, head: null, brokenAt: row.seq, brokenReason: 'HASH' };
     }
 

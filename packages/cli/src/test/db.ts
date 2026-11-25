@@ -1,6 +1,3 @@
-// Deliberately duplicated from packages/storage-pg/src/test/db.ts rather than imported across
-// the package boundary — keeps each package's integration test setup self-contained, matching
-// the small accepted duplication in storage-pg's own setup-test-db.mjs (see its top comment).
 export const TEST_DATABASE_URL =
   process.env.DATABASE_URL ?? 'postgres://postgres:postgres@localhost:5432/vellum_test';
 

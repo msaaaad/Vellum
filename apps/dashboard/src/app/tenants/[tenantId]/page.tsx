@@ -2,7 +2,7 @@ import { getPool } from '@/lib/db';
 import { queryEvents, type EventFilters } from '@/lib/events';
 import { verifyTenantChain } from '@/lib/verify';
 
-export const dynamic = 'force-dynamic'; // always read live — this is a chain browser, not a static page
+export const dynamic = 'force-dynamic';
 
 interface PageProps {
   params: { tenantId: string };
@@ -16,7 +16,7 @@ interface PageProps {
 }
 
 function shortHash(hash: string): string {
-  return `${hash.slice(0, 6)}…${hash.slice(-4)}`;
+  return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
 }
 
 export default async function TenantDashboardPage({ params, searchParams }: PageProps) {
@@ -42,7 +42,7 @@ export default async function TenantDashboardPage({ params, searchParams }: Page
         <div>
           <h1>Tenant {tenantId}</h1>
           <p className="readonly-note">
-            Reading via the read-only role — this view cannot write to the trail.
+            Reading via the read-only role. This view cannot write to the trail.
           </p>
         </div>
         <a className="export-button" href={`/tenants/${encodeURIComponent(tenantId)}/export`}>
@@ -52,15 +52,15 @@ export default async function TenantDashboardPage({ params, searchParams }: Page
 
       <div className="card">
         {verifyResult.ok ? (
-          <span className="badge verified">✓ chain: verified</span>
+          <span className="badge verified">chain: verified</span>
         ) : (
           <span className="badge tampered">
-            ✗ chain: tampered at seq {verifyResult.brokenAt} ({verifyResult.brokenReason})
+            chain: tampered at seq {verifyResult.brokenAt} ({verifyResult.brokenReason})
           </span>
         )}
         {verifyResult.ok && verifyResult.head && (
           <span className="readonly-note" style={{ marginLeft: 12 }}>
-            {verifyResult.count} events · head <code>{shortHash(verifyResult.head)}</code>
+            {verifyResult.count} events | head <code>{shortHash(verifyResult.head)}</code>
           </span>
         )}
       </div>

@@ -1,10 +1,6 @@
 import jcsCanonicalize from 'canonicalize';
 import type { AuditEvent, CanonicalPayload } from './types.js';
 
-/**
- * `Date#toISOString()` always emits exactly 3 fractional-second digits and 'Z',
- * so it doubles as the UTC-ms normalization ARCHITECTURE.md §3.2 requires.
- */
 export function normalizeOccurredAt(occurredAt: string): string {
   const date = new Date(occurredAt);
   if (Number.isNaN(date.getTime())) {
@@ -13,7 +9,6 @@ export function normalizeOccurredAt(occurredAt: string): string {
   return date.toISOString();
 }
 
-/** Builds the fixed-key-set object that gets hashed — ARCHITECTURE.md §3.1. */
 export function toCanonicalPayload(event: AuditEvent): CanonicalPayload {
   return {
     v: event.hashVersion,
@@ -35,11 +30,10 @@ export function toCanonicalPayload(event: AuditEvent): CanonicalPayload {
   };
 }
 
-/** RFC 8785 JSON Canonicalization Scheme: sorted keys, no whitespace, canonical numbers. */
 export function canonicalizePayload(payload: CanonicalPayload): string {
-  const result = jcsCanonicalize(payload);
-  if (result === undefined) {
+  const canonicalJson = jcsCanonicalize(payload);
+  if (canonicalJson === undefined) {
     throw new Error('Failed to canonicalize payload: input is not JSON-serializable');
   }
-  return result;
+  return canonicalJson;
 }

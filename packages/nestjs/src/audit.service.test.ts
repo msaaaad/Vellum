@@ -79,8 +79,6 @@ describe('AuditService.record', () => {
   });
 
   it('applies the global redact list to changes and metadata', async () => {
-    // The redact list applies to `changes`/`metadata` as the caller shaped them — no implicit
-    // `after.`/`before.` prefixing — so a nested field needs its full path, e.g. `'after.secret'`.
     const storage = fakeStorage();
     const service = new AuditService(
       new AuditWriter(storage, baseOptions({ redact: ['after.secret', 'secret'] })),

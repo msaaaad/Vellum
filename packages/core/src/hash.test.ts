@@ -41,15 +41,15 @@ describe('hashEvent', () => {
     expect(digest).toMatch(/^[0-9a-f]{64}$/);
   });
 
-  it('matches the worked genesis example from ARCHITECTURE.md §3.4', () => {
+  it('matches the worked genesis example from ARCHITECTURE.md section 3.4', () => {
     const payload = toCanonicalPayload(
       buildEvent({
         seq: 1,
-        tenantId: 't1',
+        tenantId: '00000000-0000-4000-8000-000000000001',
         occurredAt: '2026-07-20T00:00:00.000Z',
         actor: { id: null, type: 'system', label: null },
         action: 'tenant.created',
-        entity: { type: 'Tenant', id: 't1' },
+        entity: { type: 'Tenant', id: '00000000-0000-4000-8000-000000000001' },
         changes: {},
         metadata: {},
       }),

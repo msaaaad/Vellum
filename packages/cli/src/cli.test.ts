@@ -14,7 +14,7 @@ afterEach(() => {
   errorSpy.mockRestore();
 });
 
-describe('run — top-level dispatch', () => {
+describe('run - top-level dispatch', () => {
   it('prints help and exits 1 when called with no command', async () => {
     expect(await run([])).toBe(1);
     expect(logSpy).toHaveBeenCalledWith(expect.stringContaining('Usage:'));
@@ -35,15 +35,13 @@ describe('run — top-level dispatch', () => {
     expect(errorSpy).toHaveBeenCalledWith(expect.stringContaining("unknown command 'frobnicate'"));
   });
 
-  // These reach a real command handler and hit its argument validation (a CliError) before any
-  // database connection is attempted — no Docker/Postgres needed to exercise this path.
   it('prints a CliError message (not a stack trace) and exits 1 for a missing --tenant', async () => {
     expect(await run(['verify'])).toBe(1);
     expect(errorSpy).toHaveBeenCalledWith('vellum: --tenant <id> is required.');
   });
 
   it('validates --format before ever touching the database', async () => {
-    expect(await run(['export', '--tenant', 't1', '--format', 'xml'])).toBe(1);
+    expect(await run(['export', '--tenant', '00000000-0000-4000-8000-000000000001', '--format', 'xml'])).toBe(1);
     expect(errorSpy).toHaveBeenCalledWith(
       expect.stringContaining("--format must be 'json' or 'pdf'"),
     );

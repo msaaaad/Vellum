@@ -21,10 +21,10 @@ async updateParticipant(id: string, patch: UpdateParticipantDto) {
 ```
 
 ```
-$ vellum verify --tenant 78508e1e-…
-  ✔ sequence contiguous (1 … 2, no gaps)
-  ✔ every prev_hash links to the prior row
-  ✔ every row_hash reproduces from canonical payload + prev_hash
+$ vellum verify --tenant 78508e1e-...
+  [ok] sequence contiguous (1 ... 2, no gaps)
+  [ok] every prev_hash links to the prior row
+  [ok] every row_hash reproduces from canonical payload + prev_hash
   RESULT: INTACT
 ```
 

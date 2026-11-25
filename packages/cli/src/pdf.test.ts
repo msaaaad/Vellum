@@ -8,7 +8,7 @@ import { coverStampFor, renderEvidencePackPdf } from './pdf.js';
 
 function fakeRow(seq: number, action: string): ChainRow {
   return {
-    tenantId: 't1',
+    tenantId: '00000000-0000-4000-8000-000000000001',
     seq,
     occurredAt: '2026-01-01T00:00:00.000Z',
     actor: { id: 'u1', type: 'user', label: 'sam@x.io' },
@@ -25,7 +25,7 @@ function fakeRow(seq: number, action: string): ChainRow {
 describe('coverStampFor', () => {
   it('stamps VERIFIED for an intact chain', () => {
     const manifest = buildManifest({
-      tenantId: 't1',
+      tenantId: '00000000-0000-4000-8000-000000000001',
       from: null,
       to: null,
       events: [],
@@ -41,7 +41,7 @@ describe('coverStampFor', () => {
 
   it('stamps FAILED with the seq/reason for a broken chain', () => {
     const manifest = buildManifest({
-      tenantId: 't1',
+      tenantId: '00000000-0000-4000-8000-000000000001',
       from: null,
       to: null,
       events: [],
@@ -58,7 +58,7 @@ describe('coverStampFor', () => {
   it('uses different colors for VERIFIED and FAILED', () => {
     const verified = coverStampFor(
       buildManifest({
-        tenantId: 't1',
+        tenantId: '00000000-0000-4000-8000-000000000001',
         from: null,
         to: null,
         events: [],
@@ -68,7 +68,7 @@ describe('coverStampFor', () => {
     );
     const failed = coverStampFor(
       buildManifest({
-        tenantId: 't1',
+        tenantId: '00000000-0000-4000-8000-000000000001',
         from: null,
         to: null,
         events: [],
@@ -93,7 +93,7 @@ describe('renderEvidencePackPdf', () => {
 
   it('writes a well-formed, non-trivial PDF file', async () => {
     const manifest = buildManifest({
-      tenantId: 't1',
+      tenantId: '00000000-0000-4000-8000-000000000001',
       from: null,
       to: null,
       events: [fakeRow(1, 'consent.granted')],
@@ -112,7 +112,7 @@ describe('renderEvidencePackPdf', () => {
 
   it('handles an empty event list without throwing', async () => {
     const manifest = buildManifest({
-      tenantId: 't1',
+      tenantId: '00000000-0000-4000-8000-000000000001',
       from: null,
       to: null,
       events: [],
@@ -126,9 +126,9 @@ describe('renderEvidencePackPdf', () => {
     expect(bytes.subarray(0, 5).toString('ascii')).toBe('%PDF-');
   });
 
-  it('produces a broken-chain pack too — a tamper attempt is evidence, not a dead end', async () => {
+  it('produces a broken-chain pack too - a tamper attempt is evidence, not a dead end', async () => {
     const manifest = buildManifest({
-      tenantId: 't1',
+      tenantId: '00000000-0000-4000-8000-000000000001',
       from: null,
       to: null,
       events: [fakeRow(1, 'thing.done')],
@@ -145,7 +145,7 @@ describe('renderEvidencePackPdf', () => {
   it('paginates the event table across multiple pages once it overflows one page', async () => {
     const manyRows = Array.from({ length: 60 }, (_, i) => fakeRow(i + 1, 'thing.done'));
     const manifest = buildManifest({
-      tenantId: 't1',
+      tenantId: '00000000-0000-4000-8000-000000000001',
       from: null,
       to: null,
       events: manyRows,
@@ -157,9 +157,7 @@ describe('renderEvidencePackPdf', () => {
     await renderEvidencePackPdf(outPath, manifest, manyRows);
 
     const text = (await readFile(outPath)).toString('latin1');
-    // Each page object declares /Type /Page (singular) — /Type /Pages is the tree root, excluded
-    // by requiring the next char not be 's'.
     const pageCount = (text.match(/\/Type\s*\/Page(?!s)/g) ?? []).length;
-    expect(pageCount).toBeGreaterThan(2); // cover + at least 2 table pages
+    expect(pageCount).toBeGreaterThan(2);
   });
 });

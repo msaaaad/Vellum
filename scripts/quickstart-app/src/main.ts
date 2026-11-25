@@ -4,8 +4,6 @@ import { NestFactory } from '@nestjs/core';
 import { Pool } from 'pg';
 import { Audited, AuditContextMiddleware, AuditModule } from '@vellum/nestjs';
 
-// This file follows the README quick start step by step.
-
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 @Injectable()
@@ -25,13 +23,12 @@ class ParticipantsRepo {
 class ParticipantsService {
   constructor(readonly repo: ParticipantsRepo) {}
 
-  // Step 4 of the README: one decorator.
   @Audited({
     action: 'participant.updated',
     entity: 'Participant',
-    entityId: (c) => c.args[0] as string,
+    entityId: (pointcut) => pointcut.args[0] as string,
     capture: 'diff',
-    loadBefore: (c) => (c.self as ParticipantsService).repo.findById(c.args[0] as string),
+    loadBefore: (pointcut) => (pointcut.self as ParticipantsService).repo.findById(pointcut.args[0] as string),
   })
   async updateParticipant(id: string, patch: { name: string }) {
     return this.repo.update(id, patch);
@@ -50,7 +47,6 @@ class ParticipantsController {
 
 @Module({
   imports: [
-    // Step 2 of the README.
     AuditModule.forRoot({
       storage: { adapter: 'pg', pool },
       mode: 'inline',
@@ -62,7 +58,6 @@ class ParticipantsController {
   providers: [ParticipantsRepo, ParticipantsService],
 })
 class AppModule implements NestModule {
-  // Step 3 of the README.
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(AuditContextMiddleware).forRoutes('*');
   }

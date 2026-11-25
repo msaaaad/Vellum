@@ -17,17 +17,15 @@ function buildEvent(
     hashVersion: 1,
     tenantId,
     occurredAt: new Date().toISOString(),
-    actor: { id: 'u1', type: 'user', label: 'sam@x.io' },
+    actor: { id: '00000000-0000-4000-8000-000000000002', type: 'user', label: 'sam@x.io' },
     action: 'thing.done',
-    entity: { type: 'Thing', id: 't-1' },
+    entity: { type: 'Thing', id: '00000000-0000-4000-8000-000000000003' },
     changes: {},
     metadata: {},
     ...overrides,
   };
 }
 
-/** Bypasses the append-only trigger the same way a database owner could — see ARCHITECTURE.md
- * §7's threat model. Only a superuser connection can do this; the app role never can. */
 async function tamperRow(tenantId: string, seq: number): Promise<void> {
   const superuser = new Client({ connectionString: TEST_DATABASE_URL });
   await superuser.connect();

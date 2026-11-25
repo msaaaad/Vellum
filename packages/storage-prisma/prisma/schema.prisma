@@ -1,6 +1,3 @@
-// Vellum's tables are created by `vellum migrate` (raw SQL: RLS, append-only trigger, grants),
-// not by Prisma Migrate — so there are deliberately no models here. This file exists only so
-// `prisma generate` can produce a client for the adapter's tests.
 generator client {
   provider = "prisma-client-js"
 }

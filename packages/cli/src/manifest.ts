@@ -1,11 +1,5 @@
 import type { ChainRow, VerifyResult } from '@vellum/core';
 
-/**
- * The self-describing header every evidence pack carries — README "Evidence packs": tenant,
- * date range, event count, chain head hash, tool version, generated-at, and the verification
- * result. `verify` is always a **full-chain** verify (ARCHITECTURE.md §6), never scoped to
- * `range` — so a pack can't present a valid-looking slice cut from an already-broken chain.
- */
 export interface ExportManifest {
   tool: 'vellum';
   toolVersion: string;

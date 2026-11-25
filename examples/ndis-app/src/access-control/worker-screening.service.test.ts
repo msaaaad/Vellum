@@ -5,8 +5,8 @@ import { createTestRuntime } from '../test-support.js';
 import { WorkerScreeningService } from './worker-screening.service.js';
 
 const ctx = {
-  tenantId: 't1',
-  actor: { id: 'u1', type: 'user' as const, label: 'sam@x.io' },
+  tenantId: '00000000-0000-4000-8000-000000000001',
+  actor: { id: '00000000-0000-4000-8000-000000000002', type: 'user' as const, label: 'sam@x.io' },
   requestMeta: { ip: null, userAgent: null, requestId: null, route: null },
 };
 
@@ -16,11 +16,11 @@ function setup() {
 }
 
 describe('WorkerScreeningService', () => {
-  it('worker_screening.updated diffs an expiry change — DOMAIN_CHECKLIST.md §6.5', async () => {
+  it('worker_screening.updated diffs an expiry change - DOMAIN_CHECKLIST.md section 6.5', async () => {
     const { storage, service } = setup();
     const screening = service.seed({
       id: randomUUID(),
-      workerId: 'worker-1',
+      workerId: '00000000-0000-4000-8000-000000000005',
       checkType: 'NDIS Worker Screening',
       expiresAt: '2026-12-31',
       updatedAt: '2025-01-01T00:00:00.000Z',
