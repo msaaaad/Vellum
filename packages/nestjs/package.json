@@ -1,6 +1,6 @@
 {
   "name": "@getattestly/nestjs",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "NestJS integration for Attestly: AuditModule, @Audited(), context, and writers.",
   "type": "module",
   "main": "dist/index.js",

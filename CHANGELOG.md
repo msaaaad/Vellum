@@ -5,6 +5,12 @@ versions follow [SemVer](https://semver.org/) once published.
 
 ## [Unreleased]
 
+## [0.1.1] - 2026-11-25
+
+### Fixed
+
+- Each package now ships its own README, so the npm package pages show install and usage instructions.
+
 ## [0.1.0] - 2026-11-25
 
 ### Added

@@ -24,7 +24,7 @@ node - "$TARBALLS" <<'EOF'
 const fs = require('node:fs');
 const path = require('node:path');
 const dir = process.argv[2];
-const file = (n) => 'file:' + path.join(dir, `getattestly-${n}-0.1.0.tgz`).replace(/\\/g, '/');
+const file = (n) => 'file:' + path.join(dir, `getattestly-${n}-0.1.1.tgz`).replace(/\\/g, '/');
 const names = ['core', 'storage-pg', 'storage-prisma', 'nestjs', 'cli'];
 const overrides = Object.fromEntries(names.map((n) => [`@getattestly/${n}`, file(n)]));
 fs.writeFileSync('package.json', JSON.stringify({
