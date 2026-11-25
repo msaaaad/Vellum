@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
-import { verifyChain } from '@vellum/core';
-import { PgStorageAdapter } from '@vellum/storage-pg';
+import { verifyChain } from '@attestly/core';
+import { PgStorageAdapter } from '@attestly/storage-pg';
 import { createPool, resolveDatabaseUrl } from '../db.js';
 import { CliError } from '../errors.js';
 import { formatVerifyReport } from '../format.js';

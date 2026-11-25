@@ -1,5 +1,5 @@
 import type { Pool } from 'pg';
-import type { AuditActor } from '@vellum/core';
+import type { AuditActor } from '@attestly/core';
 
 export interface AuditRequestMeta {
   ip: string | null;

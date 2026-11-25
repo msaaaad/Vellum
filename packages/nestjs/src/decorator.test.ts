@@ -1,13 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import { describe, expect, it } from 'vitest';
-import { GENESIS_HASH, hashEvent, toCanonicalPayload, verifyChain } from '@vellum/core';
+import { GENESIS_HASH, hashEvent, toCanonicalPayload, verifyChain } from '@attestly/core';
 import type {
   AuditEvent,
   ChainRow,
   Checkpoint,
   PendingAuditEvent,
   StoragePort,
-} from '@vellum/core';
+} from '@attestly/core';
 import { AuditWriter } from './audit-writer.service.js';
 import { withAuditContext } from './context.js';
 import { Audited } from './decorator.js';

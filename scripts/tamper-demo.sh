@@ -36,13 +36,13 @@ fi
 echo
 echo "Tenant: $TENANT_ID"
 
-step "3/6 | vellum verify - expect INTACT"
+step "3/6 | attestly verify - expect INTACT"
 run "$CLI verify --tenant \"$TENANT_ID\" --database-url \"$DATABASE_URL\""
 
 step "4/6 | Tamper, as a superuser: UPDATE audit_events SET changes='{}' WHERE action='consent.granted'"
 run "node scripts/tamper-row.mjs \"$TENANT_ID\" \"$DATABASE_URL\""
 
-step "5/6 | vellum verify - expect TAMPERED at seq N"
+step "5/6 | attestly verify - expect TAMPERED at seq N"
 set +e
 run "$CLI verify --tenant \"$TENANT_ID\" --database-url \"$DATABASE_URL\""
 VERIFY_EXIT=$?
@@ -52,22 +52,22 @@ if [ "$VERIFY_EXIT" -eq 0 ]; then
   exit 1
 fi
 
-step "6/6 | vellum export --format pdf - expect the cover to say FAILED"
+step "6/6 | attestly export --format pdf - expect the cover to say FAILED"
 set +e
-run "$CLI export --tenant \"$TENANT_ID\" --format pdf --database-url \"$DATABASE_URL\" --out /tmp/vellum-tamper-demo.pdf"
+run "$CLI export --tenant \"$TENANT_ID\" --format pdf --database-url \"$DATABASE_URL\" --out /tmp/attestly-tamper-demo.pdf"
 EXPORT_EXIT=$?
 set -e
 if [ "$EXPORT_EXIT" -eq 0 ]; then
   echo "Expected export to exit 1 for a FAILED (tampered) pack, but it exited 0." >&2
   exit 1
 fi
-if [ ! -s /tmp/vellum-tamper-demo.pdf ]; then
-  echo "Expected /tmp/vellum-tamper-demo.pdf to exist - export didn't write a pack." >&2
+if [ ! -s /tmp/attestly-tamper-demo.pdf ]; then
+  echo "Expected /tmp/attestly-tamper-demo.pdf to exist - export didn't write a pack." >&2
   exit 1
 fi
 
 echo
-echo "Evidence pack (cover says FAILED): /tmp/vellum-tamper-demo.pdf"
+echo "Evidence pack (cover says FAILED): /tmp/attestly-tamper-demo.pdf"
 echo
 echo "Done. The chain caught the tamper - a Postgres superuser bypassed the append-only trigger"
 echo "and rewrote one row, and the hash chain still proved it happened."

@@ -2,7 +2,7 @@ import 'reflect-metadata';
 import { Controller, Injectable, Module, Post, Body, type MiddlewareConsumer, type NestModule } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { Pool } from 'pg';
-import { Audited, AuditContextMiddleware, AuditModule } from '@vellum/nestjs';
+import { Audited, AuditContextMiddleware, AuditModule } from '@attestly/nestjs';
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 

@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import type { Pool, PoolClient, QueryResultRow } from 'pg';
-import { AuditService } from '@vellum/nestjs';
+import { AuditService } from '@attestly/nestjs';
 import { EXAMPLE_PG_POOL } from '../db.js';
 import { getTenantIdOrFail } from '../tenant-context.js';
 import type { Claim, ClaimStatus } from '../types.js';

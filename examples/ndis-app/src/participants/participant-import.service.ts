@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { AuditService, withAuditContext } from '@vellum/nestjs';
+import { AuditService, withAuditContext } from '@attestly/nestjs';
 import type { Participant } from '../types.js';
 import type { CreateParticipantInput } from './participants.service.js';
 import { ParticipantsService } from './participants.service.js';

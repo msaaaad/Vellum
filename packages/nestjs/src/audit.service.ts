@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import type { ChainRow } from '@vellum/core';
+import type { ChainRow } from '@attestly/core';
 import { AuditWriter } from './audit-writer.service.js';
 import { getAuditContext } from './context.js';
 import { redact } from './redact.js';

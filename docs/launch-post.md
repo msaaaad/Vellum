@@ -7,7 +7,7 @@ Most of us answer with a `logs` table. The trouble is that anyone with database 
 `UPDATE` or `DELETE` a row in it, and nothing shows that it happened. A log you can quietly edit is
 not evidence.
 
-Vellum is my attempt at fixing that for NestJS and Postgres apps. You add a decorator, and every
+Attestly is my attempt at fixing that for NestJS and Postgres apps. You add a decorator, and every
 audited action is written to an append-only table where each row carries a SHA-256 hash of the row
 before it. Change or remove any past row and the chain stops adding up.
 
@@ -21,7 +21,7 @@ async updateParticipant(id: string, patch: UpdateParticipantDto) {
 ```
 
 ```
-$ vellum verify --tenant 78508e1e-...
+$ attestly verify --tenant 78508e1e-...
   [ok] sequence contiguous (1 ... 2, no gaps)
   [ok] every prev_hash links to the prior row
   [ok] every row_hash reproduces from canonical payload + prev_hash
@@ -33,9 +33,9 @@ $ vellum verify --tenant 78508e1e-...
 The claim is easy to make and easy to doubt, so there's a script that tests it. `pnpm demo:tamper`:
 
 1. seeds a real chain (a participant, consent, a service agreement, a claim, an incident),
-2. runs `vellum verify` and gets `INTACT`,
+2. runs `attestly verify` and gets `INTACT`,
 3. connects as a superuser and rewrites one row (`UPDATE audit_events SET changes='{}' WHERE action='consent.granted'`),
-4. runs `vellum verify` again and gets `TAMPERED at seq N`,
+4. runs `attestly verify` again and gets `TAMPERED at seq N`,
 5. exports the evidence pack, whose cover page now says `FAILED`.
 
 The append-only trigger blocks that `UPDATE` for every role, so the script has to switch the trigger
@@ -52,12 +52,12 @@ from the edit onward, recomputing every hash after it. If that is your threat mo
 is not enough.
 
 The fix is to publish the chain's head hash somewhere the app's database role cannot change, such
-as S3 Object Lock, an append-only system, or an email to your auditor. Vellum has a `checkpoint`
-table and a `vellum checkpoint` command for recording what you published and where. Once a head
+as S3 Object Lock, an append-only system, or an email to your auditor. Attestly has a `checkpoint`
+table and a `attestly checkpoint` command for recording what you published and where. Once a head
 hash is anchored, nobody can move history behind it without that being detectable.
 
 Today the anchoring is manual. Automating it is on the roadmap, along with signed evidence packs.
-Until then, Vellum narrows the people who could tamper undetected to those holding the keys to your
+Until then, Attestly narrows the people who could tamper undetected to those holding the keys to your
 database who also know to rewrite everything after the change and are willing to skip anchoring.
 That is a much smaller group than "anyone who can run an UPDATE", but it is not zero.
 
@@ -68,7 +68,7 @@ That is a much smaller group than "anyone who can run an UPDATE", but it is not 
 - `@Audited()` plus an imperative API, including a transactional one so an audit event commits or
   rolls back together with the business change it describes.
 - Inline writes, or an outbox with a worker when you want hashing off the request path.
-- A `vellum` CLI: `migrate`, `verify`, `export` (JSON and PDF evidence packs), `checkpoint`.
+- A `attestly` CLI: `migrate`, `verify`, `export` (JSON and PDF evidence packs), `checkpoint`.
 - A read-only dashboard for browsing and filtering a tenant's chain.
 - `pg` and Prisma storage adapters that behave identically, tested against the same cases.
 - An NDIS provider example that audits consent, claims and incidents, since that is the kind of
@@ -77,9 +77,9 @@ That is a much smaller group than "anyone who can run an UPDATE", but it is not 
 ## Try it
 
 ```bash
-pnpm add @vellum/nestjs @vellum/core pg
-pnpm add -D @vellum/cli
-npx vellum migrate --database-url "$DATABASE_URL"
+pnpm add @attestly/nestjs @attestly/core pg
+pnpm add -D @attestly/cli
+npx attestly migrate --database-url "$DATABASE_URL"
 ```
 
 Then register `AuditModule.forRoot(...)`, add one middleware, and put `@Audited()` on a method. The

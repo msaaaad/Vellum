@@ -1,5 +1,5 @@
 import { parseArgs } from 'node:util';
-import { PgStorageAdapter } from '@vellum/storage-pg';
+import { PgStorageAdapter } from '@attestly/storage-pg';
 import { createPool, resolveDatabaseUrl } from '../db.js';
 import { CliError } from '../errors.js';
 
@@ -23,7 +23,7 @@ export async function runCheckpoint(argv: string[]): Promise<number> {
       values['anchored-ref'] ?? null,
     );
 
-    console.log(`Vellum checkpoint - tenant ${checkpoint.tenantId}`);
+    console.log(`Attestly checkpoint - tenant ${checkpoint.tenantId}`);
     console.log(`  head_seq  = ${checkpoint.headSeq}`);
     console.log(`  head_hash = ${checkpoint.headHash}`);
     if (checkpoint.anchoredRef) {

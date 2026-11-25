@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { withAuditContext } from '@vellum/nestjs';
+import { withAuditContext } from '@attestly/nestjs';
 import { createTestRuntime } from '../test-support.js';
 import { AuthService } from './auth.service.js';
 

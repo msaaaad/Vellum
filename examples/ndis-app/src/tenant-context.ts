@@ -1,4 +1,4 @@
-import { getAuditContext } from '@vellum/nestjs';
+import { getAuditContext } from '@attestly/nestjs';
 
 export function getTenantIdOrFail(serviceName: string): string {
   const auditContext = getAuditContext();

@@ -1,7 +1,7 @@
 {
-  "name": "@vellum/nestjs",
+  "name": "@attestly/nestjs",
   "version": "0.1.0",
-  "description": "NestJS integration for Vellum: AuditModule, @Audited(), context, and writers.",
+  "description": "NestJS integration for Attestly: AuditModule, @Audited(), context, and writers.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,10 +16,10 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@vellum/core": "workspace:*",
-    "@vellum/storage-pg": "workspace:*",
+    "@attestly/core": "workspace:*",
+    "@attestly/storage-pg": "workspace:*",
     "pg": "^8.22.0",
-    "@vellum/storage-prisma": "workspace:*"
+    "@attestly/storage-prisma": "workspace:*"
   },
   "peerDependencies": {
     "bullmq": "^5.0.0",

@@ -1,6 +1,6 @@
-# Contributing to Vellum
+# Contributing to Attestly
 
-Thanks for helping. Vellum is a trust-critical library - a tamper-evident audit log - so the bar for
+Thanks for helping. Attestly is a trust-critical library - a tamper-evident audit log - so the bar for
 changes to hashing, canonicalization and verification is deliberately high. Read
 [`ARCHITECTURE.md`](./ARCHITECTURE.md) first; it is the spec.
 
@@ -8,7 +8,7 @@ changes to hashing, canonicalization and verification is deliberately high. Read
 
 ```bash
 pnpm install
-pnpm --filter @vellum/storage-prisma generate   # generates the Prisma client the adapter tests use
+pnpm --filter @attestly/storage-prisma generate   # generates the Prisma client the adapter tests use
 pnpm build
 pnpm test                # unit tests, no database needed
 ```
@@ -52,11 +52,11 @@ privately to the maintainer rather than in a public issue.
 
 ## Releasing
 
-Publishable packages: `@vellum/core`, `@vellum/storage-pg`, `@vellum/storage-prisma`,
-`@vellum/nestjs`, `@vellum/cli` (the dashboard and example are private). They are versioned together.
+Publishable packages: `@attestly/core`, `@attestly/storage-pg`, `@attestly/storage-prisma`,
+`@attestly/nestjs`, `@attestly/cli` (the dashboard and example are private). They are versioned together.
 
 ```bash
-npm login                      # an account that owns the @vellum scope
+npm login                      # an account that owns the @attestly scope
 pnpm release                   # builds, then publishes in dependency order
 ```
 

@@ -1,8 +1,8 @@
 import { Pool } from 'pg';
 import { Test } from '@nestjs/testing';
 import { describe, expect, it, vi } from 'vitest';
-import { PgStorageAdapter } from '@vellum/storage-pg';
-import { PrismaStorageAdapter } from '@vellum/storage-prisma';
+import { PgStorageAdapter } from '@attestly/storage-pg';
+import { PrismaStorageAdapter } from '@attestly/storage-prisma';
 import { AuditContextMiddleware } from './middleware.js';
 import { AuditModule } from './module.js';
 import { AuditOutboxWorker } from './outbox-worker.service.js';
@@ -90,7 +90,7 @@ describe("AuditModule.forRoot with mode: 'outbox'", () => {
     expect(moduleRef.get(AuditOutboxWorker)).toBeInstanceOf(AuditOutboxWorker);
 
     await moduleRef.init();
-    expect(addMock).toHaveBeenCalledWith('vellum:drain-tick', {}, expect.any(Object));
+    expect(addMock).toHaveBeenCalledWith('attestly:drain-tick', {}, expect.any(Object));
 
     await moduleRef.close();
   });

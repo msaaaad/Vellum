@@ -50,13 +50,13 @@ importers:
 
   apps/dashboard:
     dependencies:
-      '@vellum/cli':
+      '@attestly/cli':
         specifier: workspace:*
         version: link:../../packages/cli
-      '@vellum/core':
+      '@attestly/core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@vellum/storage-pg':
+      '@attestly/storage-pg':
         specifier: workspace:*
         version: link:../../packages/storage-pg
       next:
@@ -93,24 +93,24 @@ importers:
 
   examples/ndis-app:
     dependencies:
+      '@attestly/cli':
+        specifier: workspace:*
+        version: link:../../packages/cli
+      '@attestly/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@attestly/nestjs':
+        specifier: workspace:*
+        version: link:../../packages/nestjs
+      '@attestly/storage-pg':
+        specifier: workspace:*
+        version: link:../../packages/storage-pg
       '@nestjs/common':
         specifier: ^10.4.0
         version: 10.4.22(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0)
       '@nestjs/core':
         specifier: ^10.4.0
         version: 10.4.22(@nestjs/common@10.4.22(reflect-metadata@0.2.2)(rxjs@7.8.2)(supports-color@7.2.0))(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@vellum/cli':
-        specifier: workspace:*
-        version: link:../../packages/cli
-      '@vellum/core':
-        specifier: workspace:*
-        version: link:../../packages/core
-      '@vellum/nestjs':
-        specifier: workspace:*
-        version: link:../../packages/nestjs
-      '@vellum/storage-pg':
-        specifier: workspace:*
-        version: link:../../packages/storage-pg
       pg:
         specifier: ^8.22.0
         version: 8.22.0
@@ -133,10 +133,10 @@ importers:
 
   packages/cli:
     dependencies:
-      '@vellum/core':
+      '@attestly/core':
         specifier: workspace:*
         version: link:../core
-      '@vellum/storage-pg':
+      '@attestly/storage-pg':
         specifier: workspace:*
         version: link:../storage-pg
       pdfkit:
@@ -174,13 +174,13 @@ importers:
 
   packages/nestjs:
     dependencies:
-      '@vellum/core':
+      '@attestly/core':
         specifier: workspace:*
         version: link:../core
-      '@vellum/storage-pg':
+      '@attestly/storage-pg':
         specifier: workspace:*
         version: link:../storage-pg
-      '@vellum/storage-prisma':
+      '@attestly/storage-prisma':
         specifier: workspace:*
         version: link:../storage-prisma
       pg:
@@ -214,7 +214,7 @@ importers:
 
   packages/storage-pg:
     dependencies:
-      '@vellum/core':
+      '@attestly/core':
         specifier: workspace:*
         version: link:../core
       pg:
@@ -233,19 +233,19 @@ importers:
 
   packages/storage-prisma:
     dependencies:
-      '@vellum/core':
+      '@attestly/core':
         specifier: workspace:*
         version: link:../core
     devDependencies:
+      '@attestly/storage-pg':
+        specifier: workspace:*
+        version: link:../storage-pg
       '@prisma/client':
         specifier: ^6.0.0
         version: 6.19.3(prisma@6.19.3(typescript@5.9.3))(typescript@5.9.3)
       '@types/pg':
         specifier: ^8.20.0
         version: 8.20.3
-      '@vellum/storage-pg':
-        specifier: workspace:*
-        version: link:../storage-pg
       pg:
         specifier: ^8.22.0
         version: 8.22.0

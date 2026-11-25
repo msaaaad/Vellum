@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { Client, Pool } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { GENESIS_HASH, verifyChain, type PendingAuditEvent } from '@vellum/core';
+import { GENESIS_HASH, verifyChain, type PendingAuditEvent } from '@attestly/core';
 import { connectionStringFor, TEST_DATABASE_URL } from './test/db.js';
 import { PgStorageAdapter } from './pg-storage-adapter.js';
 import { readMigrationSql } from './migration.js';

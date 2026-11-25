@@ -5,7 +5,7 @@ import type {
   ChainRow,
   PendingAuditEvent,
   StoragePort,
-} from '@vellum/core';
+} from '@attestly/core';
 import { setActiveAuditWriter } from './runtime.js';
 import { AUDIT_MODULE_OPTIONS, AUDIT_STORAGE } from './tokens.js';
 import type { AuditModuleOptions } from './types.js';

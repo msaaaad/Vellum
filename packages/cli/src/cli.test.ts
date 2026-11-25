@@ -37,7 +37,7 @@ describe('run - top-level dispatch', () => {
 
   it('prints a CliError message (not a stack trace) and exits 1 for a missing --tenant', async () => {
     expect(await run(['verify'])).toBe(1);
-    expect(errorSpy).toHaveBeenCalledWith('vellum: --tenant <id> is required.');
+    expect(errorSpy).toHaveBeenCalledWith('attestly: --tenant <id> is required.');
   });
 
   it('validates --format before ever touching the database', async () => {

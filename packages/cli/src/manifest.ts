@@ -1,7 +1,7 @@
-import type { ChainRow, VerifyResult } from '@vellum/core';
+import type { ChainRow, VerifyResult } from '@attestly/core';
 
 export interface ExportManifest {
-  tool: 'vellum';
+  tool: 'attestly';
   toolVersion: string;
   tenantId: string;
   range: { from: string | null; to: string | null };
@@ -24,7 +24,7 @@ export interface BuildManifestInput {
 export function buildManifest(input: BuildManifestInput): ExportManifest {
   const clock = input.clock ?? (() => new Date());
   return {
-    tool: 'vellum',
+    tool: 'attestly',
     toolVersion: input.toolVersion,
     tenantId: input.tenantId,
     range: { from: input.from, to: input.to },

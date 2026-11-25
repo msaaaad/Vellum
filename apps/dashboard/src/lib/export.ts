@@ -1,6 +1,6 @@
 import type { Pool } from 'pg';
-import { verifyChain, type ChainRow } from '@vellum/core';
-import { buildManifest, getToolVersion, type ExportManifest } from '@vellum/cli/evidence-pack';
+import { verifyChain, type ChainRow } from '@attestly/core';
+import { buildManifest, getToolVersion, type ExportManifest } from '@attestly/cli/evidence-pack';
 import { readTenantChain } from './verify';
 
 export async function buildTenantEvidencePack(

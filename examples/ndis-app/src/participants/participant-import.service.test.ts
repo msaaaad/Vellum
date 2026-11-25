@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { verifyChain } from '@vellum/core';
+import { verifyChain } from '@attestly/core';
 import { createTestRuntime } from '../test-support.js';
 import { ParticipantImportService } from './participant-import.service.js';
 import { ParticipantsService } from './participants.service.js';

@@ -13,7 +13,7 @@ versions follow [SemVer](https://semver.org/) once published.
   start, and verifies the resulting chain. Runs in CI (`.github/workflows/ci.yml`).
 - Publish metadata (license, files, repository) for the five packages; release script.
 - README badges, a corrected install/migration section, and `docs/launch-post.md`.
-- `@vellum/storage-prisma`: a Prisma `StoragePort` adapter with behavioural parity to `storage-pg`
+- `@attestly/storage-prisma`: a Prisma `StoragePort` adapter with behavioural parity to `storage-pg`
   (same tables, RLS scoping, advisory-lock serialization, outbox semantics), verified by an
   integration suite including cross-adapter read-back.
 - `LICENSE` (MIT), `CONTRIBUTING.md`, this changelog.
@@ -21,6 +21,9 @@ versions follow [SemVer](https://semver.org/) once published.
 
 ### Changed
 
+- Renamed the project from Vellum to Attestly before the first publish: packages are `@attestly/*`,
+  the CLI binary is `attestly`, and evidence packs carry `tool: 'attestly'`. Postgres identifiers
+  (`vellum_app`, `vellum_readonly`, `vellum.tenant_id`, the trigger and policy names) are unchanged.
 - `StoragePort.drainOutbox`, `listOutboxTenants` and `recordCheckpoint` now take their batch size, limit and
   anchored reference explicitly instead of hiding defaults inside each adapter.
 - CLI report output uses ASCII markers (`[ok]`, `[x]`, `->`) instead of Unicode glyphs.
@@ -31,8 +34,8 @@ versions follow [SemVer](https://semver.org/) once published.
 - Flaky `storage-pg` outbox test: it enqueued one tenant's events concurrently and then asserted
   their order.
 - `@nestjs/common`, `@nestjs/core` and `reflect-metadata` are peer dependencies of
-  `@vellum/nestjs` so apps don't end up with two copies.
-- Test helpers no longer ship in `@vellum/storage-pg`'s package.
+  `@attestly/nestjs` so apps don't end up with two copies.
+- Test helpers no longer ship in `@attestly/storage-pg`'s package.
 - `pnpm test:integration` now also runs the dashboard and `examples/ndis-app` integration tests
   (it previously matched only `packages/**`) and runs files serially, since they share one database.
 - `examples/ndis-app` story drains the outbox after the claim steps so claim events appear in story

@@ -15,7 +15,7 @@ module.exports = {
     {
       name: 'core-no-sibling-packages',
       comment:
-        'packages/core must not depend on any other Vellum package - it is the dependency root, ' +
+        'packages/core must not depend on any other Attestly package - it is the dependency root, ' +
         'so a cycle back into nestjs/cli/storage-pg would break independent testability.',
       severity: 'error',
       from: { path: '^packages/core' },

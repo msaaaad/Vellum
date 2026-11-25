@@ -1,7 +1,7 @@
 import { writeFile } from 'node:fs/promises';
 import { parseArgs } from 'node:util';
-import { verifyChain, type ChainRow } from '@vellum/core';
-import { PgStorageAdapter } from '@vellum/storage-pg';
+import { verifyChain, type ChainRow } from '@attestly/core';
+import { PgStorageAdapter } from '@attestly/storage-pg';
 import { createPool, resolveDatabaseUrl } from '../db.js';
 import { CliError } from '../errors.js';
 import { buildManifest } from '../manifest.js';
@@ -34,7 +34,7 @@ export function filterByDate(rows: ChainRow[], from: string | null, to: string |
 
 function defaultOutPath(tenantId: string, format: 'json' | 'pdf'): string {
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  return `vellum-export-${tenantId}-${stamp}.${format}`;
+  return `attestly-export-${tenantId}-${stamp}.${format}`;
 }
 
 export async function runExport(argv: string[]): Promise<number> {
@@ -82,7 +82,7 @@ export async function runExport(argv: string[]): Promise<number> {
     }
 
     console.log(
-      `vellum export: wrote ${outPath} (${events.length} events, ${verifyResult.ok ? 'VERIFIED' : 'FAILED'})`,
+      `attestly export: wrote ${outPath} (${events.length} events, ${verifyResult.ok ? 'VERIFIED' : 'FAILED'})`,
     );
     return verifyResult.ok ? 0 : 1;
   } finally {

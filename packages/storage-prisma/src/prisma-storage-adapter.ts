@@ -10,7 +10,7 @@ import {
   type PendingAuditEvent,
   type ReadRangeOptions,
   type StoragePort,
-} from '@vellum/core';
+} from '@attestly/core';
 
 export interface PrismaQueryable {
   $queryRawUnsafe<T = unknown>(query: string, ...values: unknown[]): Promise<T>;

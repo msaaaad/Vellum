@@ -1,7 +1,7 @@
 {
-  "name": "@vellum/core",
+  "name": "@attestly/core",
   "version": "0.1.0",
-  "description": "Framework-agnostic canonicalization, hashing, and verification for Vellum audit chains.",
+  "description": "Framework-agnostic canonicalization, hashing, and verification for Attestly audit chains.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

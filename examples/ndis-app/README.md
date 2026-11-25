@@ -1,6 +1,6 @@
-# Vellum - NDIS provider example
+# Attestly - NDIS provider example
 
-A runnable demo wiring `@vellum/nestjs` into a small NDIS provider domain - DOMAIN_CHECKLIST.md
+A runnable demo wiring `@attestly/nestjs` into a small NDIS provider domain - DOMAIN_CHECKLIST.md
 Phase 6. Business records (participants, consents, incidents, roles, worker screenings) live
 in-memory for simplicity; Service Agreements and Claims are real Postgres rows, since Phase 6
 specifically needs a genuine transaction to demonstrate the atomic `enqueue(tx, ...)` API. The
@@ -20,7 +20,7 @@ pnpm build
 pnpm seed
 ```
 
-`pnpm seed` prints the tenant id it used, plus the exact `vellum verify`/`vellum export` commands
+`pnpm seed` prints the tenant id it used, plus the exact `attestly verify`/`attestly export` commands
 to inspect the result:
 
 ```bash

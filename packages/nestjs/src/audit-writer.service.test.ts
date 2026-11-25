@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ChainRow, PendingAuditEvent, StoragePort } from '@vellum/core';
-import { GENESIS_HASH } from '@vellum/core';
+import type { ChainRow, PendingAuditEvent, StoragePort } from '@attestly/core';
+import { GENESIS_HASH } from '@attestly/core';
 import { AuditWriter } from './audit-writer.service.js';
 import type { AuditModuleOptions } from './types.js';
 

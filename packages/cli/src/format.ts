@@ -1,4 +1,4 @@
-import type { BrokenReason, VerifyResult } from '@vellum/core';
+import type { BrokenReason, VerifyResult } from '@attestly/core';
 
 export function shortHash(hash: string): string {
   return `${hash.slice(0, 6)}...${hash.slice(-4)}`;
@@ -17,7 +17,7 @@ export function formatVerifyReport(
   verifiedAt: string,
 ): string {
   const eventWord = result.count === 1 ? 'event' : 'events';
-  const lines = [`Vellum verify - tenant ${tenantId}  (${result.count} ${eventWord})`];
+  const lines = [`Attestly verify - tenant ${tenantId}  (${result.count} ${eventWord})`];
 
   if (result.ok) {
     lines.push(`  [ok] sequence contiguous (1 ... ${result.count}, no gaps)`);

@@ -1,6 +1,6 @@
 import { createWriteStream } from 'node:fs';
 import PDFDocument from 'pdfkit';
-import type { ChainRow } from '@vellum/core';
+import type { ChainRow } from '@attestly/core';
 import type { ExportManifest } from './manifest.js';
 
 const VERIFIED_COLOR = '#0a7d2c';
@@ -80,7 +80,7 @@ function drawCoverPage(doc: PDFKit.PDFDocument, manifest: ExportManifest): void 
     .font('Helvetica-Bold')
     .fontSize(16)
     .fillColor('#000000')
-    .text('Vellum Evidence Pack', { align: 'center' });
+    .text('Attestly Evidence Pack', { align: 'center' });
   doc.moveDown(2);
 
   const fields: Array<[string, string]> = [

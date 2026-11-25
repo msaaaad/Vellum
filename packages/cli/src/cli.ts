@@ -12,13 +12,13 @@ const COMMANDS: Record<string, (argv: string[]) => Promise<number>> = {
   checkpoint: runCheckpoint,
 };
 
-const HELP = `Vellum - tamper-evident, tenant-scoped audit trails for NestJS + PostgreSQL.
+const HELP = `Attestly - tamper-evident, tenant-scoped audit trails for NestJS + PostgreSQL.
 
 Usage:
-  vellum migrate [--database-url <url>]
-  vellum verify --tenant <id> [--from <seq>] [--to <seq>] [--json] [--database-url <url>]
-  vellum export --tenant <id> --format json|pdf [--from <date>] [--to <date>] [--out <path>] [--database-url <url>]
-  vellum checkpoint --tenant <id> [--anchored-ref <ref>] [--database-url <url>]
+  attestly migrate [--database-url <url>]
+  attestly verify --tenant <id> [--from <seq>] [--to <seq>] [--json] [--database-url <url>]
+  attestly export --tenant <id> --format json|pdf [--from <date>] [--to <date>] [--out <path>] [--database-url <url>]
+  attestly checkpoint --tenant <id> [--anchored-ref <ref>] [--database-url <url>]
 
 Options:
   --database-url <url>   Postgres connection string (default: $DATABASE_URL)
@@ -40,7 +40,7 @@ export async function run(argv: string[]): Promise<number> {
 
   const handler = COMMANDS[command];
   if (!handler) {
-    console.error(`vellum: unknown command '${command}'\n`);
+    console.error(`attestly: unknown command '${command}'\n`);
     console.error(HELP);
     return 1;
   }
@@ -49,7 +49,7 @@ export async function run(argv: string[]): Promise<number> {
     return await handler(rest);
   } catch (err) {
     if (err instanceof CliError) {
-      console.error(`vellum: ${err.message}`);
+      console.error(`attestly: ${err.message}`);
       return 1;
     }
     throw err;

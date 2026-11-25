@@ -24,24 +24,24 @@ node - "$TARBALLS" <<'EOF'
 const fs = require('node:fs');
 const path = require('node:path');
 const dir = process.argv[2];
-const file = (n) => 'file:' + path.join(dir, `vellum-${n}-0.1.0.tgz`).replace(/\\/g, '/');
+const file = (n) => 'file:' + path.join(dir, `attestly-${n}-0.1.0.tgz`).replace(/\\/g, '/');
 const names = ['core', 'storage-pg', 'storage-prisma', 'nestjs', 'cli'];
-const overrides = Object.fromEntries(names.map((n) => [`@vellum/${n}`, file(n)]));
+const overrides = Object.fromEntries(names.map((n) => [`@attestly/${n}`, file(n)]));
 fs.writeFileSync('package.json', JSON.stringify({
   name: 'fresh-app', version: '0.0.0', private: true, type: 'module',
   dependencies: {
     '@nestjs/common': '^10.4.0', '@nestjs/core': '^10.4.0', '@nestjs/platform-express': '^10.4.0',
     'reflect-metadata': '^0.2.2', rxjs: '^7.8.0', pg: '^8.12.0',
-    '@vellum/nestjs': overrides['@vellum/nestjs'], '@vellum/core': overrides['@vellum/core'],
+    '@attestly/nestjs': overrides['@attestly/nestjs'], '@attestly/core': overrides['@attestly/core'],
   },
-  devDependencies: { '@vellum/cli': overrides['@vellum/cli'], typescript: '^5.7.0', '@types/node': '^22.0.0', '@types/pg': '^8.11.0' },
+  devDependencies: { '@attestly/cli': overrides['@attestly/cli'], typescript: '^5.7.0', '@types/node': '^22.0.0', '@types/pg': '^8.11.0' },
   overrides,
 }, null, 2));
 EOF
 npm install --no-audit --no-fund --loglevel=error
 
-echo "-- README step 1: npx vellum migrate"
-npx vellum migrate --database-url "$DATABASE_URL"
+echo "-- README step 1: npx attestly migrate"
+npx attestly migrate --database-url "$DATABASE_URL"
 
 echo "-- README steps 2-4: module + middleware + @Audited, then real requests"
 npx tsc -p tsconfig.json
@@ -49,8 +49,8 @@ TENANT_ID="$(node -e 'console.log(crypto.randomUUID())')"
 export TENANT_ID DATABASE_URL
 node dist/main.js
 
-echo "-- README: npx vellum verify"
-npx vellum verify --tenant "$TENANT_ID" --database-url "$DATABASE_URL"
+echo "-- README: npx attestly verify"
+npx attestly verify --tenant "$TENANT_ID" --database-url "$DATABASE_URL"
 
 echo
 echo "Quickstart check passed: a fresh app got a verified chain from the README steps alone."

@@ -6,12 +6,12 @@ import {
   type OnModuleInit,
 } from '@nestjs/common';
 import type { ConnectionOptions, Queue as QueueType, Worker as WorkerType } from 'bullmq';
-import type { ChainRow, StoragePort } from '@vellum/core';
+import type { ChainRow, StoragePort } from '@attestly/core';
 import { AUDIT_MODULE_OPTIONS, AUDIT_STORAGE } from './tokens.js';
 import type { AuditModuleOptions, AuditOutboxConfig } from './types.js';
 
-const DRAIN_TICK_JOB = 'vellum:drain-tick';
-const DEFAULT_QUEUE_NAME = 'vellum-audit';
+const DRAIN_TICK_JOB = 'attestly:drain-tick';
+const DEFAULT_QUEUE_NAME = 'attestly-audit';
 const DEFAULT_POLL_INTERVAL_MS = 1000;
 const DEFAULT_DRAIN_BATCH_SIZE = 100;
 const TENANTS_PER_DRAIN_TICK = 100;
