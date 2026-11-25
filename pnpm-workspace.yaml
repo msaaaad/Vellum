@@ -3,4 +3,9 @@ packages:
   - "apps/*"
   - "examples/*"
 allowBuilds:
+  '@nestjs/core': false
+  '@prisma/client': true
+  '@prisma/engines': true
   esbuild: true
+  msgpackr-extract: false
+  prisma: true
