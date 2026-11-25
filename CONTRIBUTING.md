@@ -8,7 +8,7 @@ changes to hashing, canonicalization and verification is deliberately high. Read
 
 ```bash
 pnpm install
-pnpm --filter @attestly/storage-prisma generate   # generates the Prisma client the adapter tests use
+pnpm --filter @getattestly/storage-prisma generate   # generates the Prisma client the adapter tests use
 pnpm build
 pnpm test                # unit tests, no database needed
 ```
@@ -52,11 +52,11 @@ privately to the maintainer rather than in a public issue.
 
 ## Releasing
 
-Publishable packages: `@attestly/core`, `@attestly/storage-pg`, `@attestly/storage-prisma`,
-`@attestly/nestjs`, `@attestly/cli` (the dashboard and example are private). They are versioned together.
+Publishable packages: `@getattestly/core`, `@getattestly/storage-pg`, `@getattestly/storage-prisma`,
+`@getattestly/nestjs`, `@getattestly/cli` (the dashboard and example are private). They are versioned together.
 
 ```bash
-npm login                      # an account that owns the @attestly scope
+npm login                      # an account that owns the @getattestly scope
 pnpm release                   # builds, then publishes in dependency order
 ```
 

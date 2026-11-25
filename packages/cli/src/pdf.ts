@@ -1,6 +1,6 @@
 import { createWriteStream } from 'node:fs';
 import PDFDocument from 'pdfkit';
-import type { ChainRow } from '@attestly/core';
+import type { ChainRow } from '@getattestly/core';
 import type { ExportManifest } from './manifest.js';
 
 const VERIFIED_COLOR = '#0a7d2c';

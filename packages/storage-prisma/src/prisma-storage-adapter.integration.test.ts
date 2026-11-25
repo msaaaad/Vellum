@@ -2,8 +2,8 @@ import { randomUUID } from 'node:crypto';
 import { PrismaClient } from '@prisma/client';
 import { Pool } from 'pg';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
-import { verifyChain, type PendingAuditEvent } from '@attestly/core';
-import { PgStorageAdapter } from '@attestly/storage-pg';
+import { verifyChain, type PendingAuditEvent } from '@getattestly/core';
+import { PgStorageAdapter } from '@getattestly/storage-pg';
 import { PrismaStorageAdapter, type PrismaQueryable } from './prisma-storage-adapter.js';
 
 const ADMIN_URL =

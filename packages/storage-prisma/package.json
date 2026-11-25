@@ -1,5 +1,5 @@
 {
-  "name": "@attestly/storage-prisma",
+  "name": "@getattestly/storage-prisma",
   "version": "0.1.0",
   "description": "Prisma StoragePort adapter for Attestly.",
   "type": "module",
@@ -17,7 +17,7 @@
     "generate": "prisma generate"
   },
   "dependencies": {
-    "@attestly/core": "workspace:*"
+    "@getattestly/core": "workspace:*"
   },
   "peerDependencies": {
     "@prisma/client": ">=5.0.0"
@@ -27,7 +27,7 @@
     "prisma": "^6.0.0",
     "typescript": "^5.7.0",
     "vitest": "^2.1.0",
-    "@attestly/storage-pg": "workspace:*",
+    "@getattestly/storage-pg": "workspace:*",
     "pg": "^8.22.0",
     "@types/pg": "^8.20.0"
   },

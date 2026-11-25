@@ -6,7 +6,7 @@ import {
   type OnModuleInit,
 } from '@nestjs/common';
 import type { ConnectionOptions, Queue as QueueType, Worker as WorkerType } from 'bullmq';
-import type { ChainRow, StoragePort } from '@attestly/core';
+import type { ChainRow, StoragePort } from '@getattestly/core';
 import { AUDIT_MODULE_OPTIONS, AUDIT_STORAGE } from './tokens.js';
 import type { AuditModuleOptions, AuditOutboxConfig } from './types.js';
 

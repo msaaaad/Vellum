@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
-import { verifyChain } from '@attestly/core';
-import { PgStorageAdapter } from '@attestly/storage-pg';
+import { verifyChain } from '@getattestly/core';
+import { PgStorageAdapter } from '@getattestly/storage-pg';
 import { createPool, resolveDatabaseUrl } from '../db.js';
 import { CliError } from '../errors.js';
 import { formatVerifyReport } from '../format.js';

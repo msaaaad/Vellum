@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { verifyChain } from '@attestly/core';
-import { withAuditContext } from '@attestly/nestjs';
+import { verifyChain } from '@getattestly/core';
+import { withAuditContext } from '@getattestly/nestjs';
 import { createTestRuntime } from '../test-support.js';
 import { IncidentsService } from './incidents.service.js';
 

@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { ChainRow } from '@attestly/core';
+import type { ChainRow } from '@getattestly/core';
 import { buildManifest } from './manifest.js';
 import { coverStampFor, renderEvidencePackPdf } from './pdf.js';
 

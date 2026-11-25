@@ -1,5 +1,5 @@
 {
-  "name": "@attestly/dashboard",
+  "name": "@getattestly/dashboard",
   "version": "0.0.0",
   "private": true,
   "description": "Read-only Next.js dashboard for browsing and verifying audit chains (DOMAIN_CHECKLIST.md Phase 7).",
@@ -11,9 +11,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@attestly/cli": "workspace:*",
-    "@attestly/core": "workspace:*",
-    "@attestly/storage-pg": "workspace:*",
+    "@getattestly/cli": "workspace:*",
+    "@getattestly/core": "workspace:*",
+    "@getattestly/storage-pg": "workspace:*",
     "next": "^14.2.35",
     "pg": "^8.22.0",
     "react": "^18.2.0",

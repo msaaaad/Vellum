@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ChainRow, VerifyResult } from '@attestly/core';
+import type { ChainRow, VerifyResult } from '@getattestly/core';
 import { buildManifest } from './manifest.js';
 
 function fakeRow(seq: number): ChainRow {

@@ -1,4 +1,4 @@
-import type { ChainRow, VerifyResult } from '@attestly/core';
+import type { ChainRow, VerifyResult } from '@getattestly/core';
 
 export interface ExportManifest {
   tool: 'attestly';

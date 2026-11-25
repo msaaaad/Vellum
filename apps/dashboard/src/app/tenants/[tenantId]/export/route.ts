@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { NextResponse } from 'next/server';
-import { renderEvidencePackPdf } from '@attestly/cli/evidence-pack';
+import { renderEvidencePackPdf } from '@getattestly/cli/evidence-pack';
 import { getPool } from '@/lib/db';
 import { buildTenantEvidencePack } from '@/lib/export';
 

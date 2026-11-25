@@ -1,5 +1,5 @@
 {
-  "name": "@attestly/storage-pg",
+  "name": "@getattestly/storage-pg",
   "version": "0.1.0",
   "description": "node-postgres StoragePort adapter for Attestly.",
   "type": "module",
@@ -16,7 +16,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@attestly/core": "workspace:*",
+    "@getattestly/core": "workspace:*",
     "pg": "^8.22.0"
   },
   "devDependencies": {

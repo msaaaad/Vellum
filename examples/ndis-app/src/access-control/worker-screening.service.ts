@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Audited } from '@attestly/nestjs';
+import { Audited } from '@getattestly/nestjs';
 import { InMemoryRepository } from '../in-memory-repository.js';
 import type { WorkerScreening } from '../types.js';
 

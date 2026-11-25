@@ -3,11 +3,11 @@
 [![CI](https://github.com/msaaaad/Vellum/actions/workflows/ci.yml/badge.svg)](https://github.com/msaaaad/Vellum/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-339933.svg)](https://nodejs.org)
-[![npm](https://img.shields.io/npm/v/@attestly/nestjs.svg?label=%40attestly%2Fnestjs)](https://www.npmjs.com/package/@attestly/nestjs)
+[![npm](https://img.shields.io/npm/v/@getattestly/nestjs.svg?label=%40attestly%2Fnestjs)](https://www.npmjs.com/package/@getattestly/nestjs)
 
 > Tamper-evident, tenant-scoped audit trails for NestJS - a drop-in evidence layer that turns "we log stuff" into "we can *prove* what happened."
 
-`@attestly/nestjs` gives any multi-tenant NestJS + PostgreSQL app an **append-only, hash-chained audit log** with almost no work: add a decorator, and every meaningful action is recorded with *who / what / which tenant / when*, chained so that any later edit or deletion is detectable. One command produces an auditor-ready **evidence pack**.
+`@getattestly/nestjs` gives any multi-tenant NestJS + PostgreSQL app an **append-only, hash-chained audit log** with almost no work: add a decorator, and every meaningful action is recorded with *who / what / which tenant / when*, chained so that any later edit or deletion is detectable. One command produces an auditor-ready **evidence pack**.
 
 Built for the moment every B2B SaaS eventually hits: an enterprise customer's security review asks for *"an immutable audit log of all data access and changes"* - and you don't want to build (and defend) that from scratch.
 
@@ -73,10 +73,10 @@ It feels native to NestJS (decorators, DI, middleware, an optional BullMQ worker
 ## Install
 
 ```bash
-pnpm add @attestly/nestjs @attestly/core pg
-pnpm add -D @attestly/cli
+pnpm add @getattestly/nestjs @getattestly/core pg
+pnpm add -D @getattestly/cli
 # using Prisma instead of pg? Attestly only needs your existing client:
-pnpm add @attestly/storage-prisma   # optional, @attestly/nestjs already bundles it
+pnpm add @getattestly/storage-prisma   # optional, @getattestly/nestjs already bundles it
 # outbox mode also needs BullMQ + Redis (you likely already have these)
 pnpm add bullmq
 ```
@@ -93,7 +93,7 @@ Requires: **NestJS 10+**, **PostgreSQL 14+**, Node 18+. Storage adapter for **Pr
 
 ```bash
 npx attestly migrate --database-url "$DATABASE_URL"
-# or apply node_modules/@attestly/storage-pg/migrations/0001_init.sql with psql
+# or apply node_modules/@getattestly/storage-pg/migrations/0001_init.sql with psql
 ```
 
 Run it as a role that can create tables and roles. The migration also creates two roles, `vellum_app` (insert/select only) and `vellum_readonly`; your app should connect as `vellum_app` in production so the database itself refuses `UPDATE` and `DELETE`.
@@ -102,7 +102,7 @@ Run it as a role that can create tables and roles. The migration also creates tw
 
 ```ts
 // app.module.ts
-import { AuditModule } from '@attestly/nestjs';
+import { AuditModule } from '@getattestly/nestjs';
 
 @Module({
   imports: [
@@ -122,7 +122,7 @@ export class AppModule {}
 
 ```ts
 // main.ts / a module
-import { AuditContextMiddleware } from '@attestly/nestjs';
+import { AuditContextMiddleware } from '@getattestly/nestjs';
 consumer.apply(AuditContextMiddleware).forRoutes('*');
 ```
 

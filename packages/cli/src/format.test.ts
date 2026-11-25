@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { VerifyResult } from '@attestly/core';
+import type { VerifyResult } from '@getattestly/core';
 import { formatVerifyReport, shortHash } from './format.js';
 
 describe('shortHash', () => {
