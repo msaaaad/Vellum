@@ -5,6 +5,12 @@ versions follow [SemVer](https://semver.org/) once published.
 
 ## [Unreleased]
 
+## [0.1.2] - 2026-11-25
+
+### Changed
+
+- Repository links now point to `github.com/msaaaad/attestly` after the GitHub repository was renamed.
+
 ## [0.1.1] - 2026-11-25
 
 ### Fixed

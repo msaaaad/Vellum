@@ -86,7 +86,7 @@ Then register `AuditModule.forRoot(...)`, add one middleware, and put `@Audited(
 README walks through it, and CI checks that walkthrough on every change by installing the packed
 packages into a brand-new app and verifying the chain it produces.
 
-Source, docs and the full threat model: https://github.com/msaaaad/Vellum
+Source, docs and the full threat model: https://github.com/msaaaad/attestly
 
 If you see a way to alter the log without detection, I want to hear about it. That is the bug that
 matters most for a project like this.

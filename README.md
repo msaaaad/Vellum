@@ -1,6 +1,6 @@
 # Attestly
 
-[![CI](https://github.com/msaaaad/Vellum/actions/workflows/ci.yml/badge.svg)](https://github.com/msaaaad/Vellum/actions/workflows/ci.yml)
+[![CI](https://github.com/msaaaad/attestly/actions/workflows/ci.yml/badge.svg)](https://github.com/msaaaad/attestly/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-339933.svg)](https://nodejs.org)
 [![npm](https://img.shields.io/npm/v/@getattestly/nestjs.svg?label=%40getattestly%2Fnestjs)](https://www.npmjs.com/package/@getattestly/nestjs)

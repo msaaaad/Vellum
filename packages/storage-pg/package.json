@@ -1,6 +1,6 @@
 {
   "name": "@getattestly/storage-pg",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "node-postgres StoragePort adapter for Attestly.",
   "type": "module",
   "main": "dist/index.js",
@@ -35,12 +35,12 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/msaaaad/Vellum.git",
+    "url": "git+https://github.com/msaaaad/attestly.git",
     "directory": "packages/storage-pg"
   },
-  "homepage": "https://github.com/msaaaad/Vellum#readme",
+  "homepage": "https://github.com/msaaaad/attestly#readme",
   "bugs": {
-    "url": "https://github.com/msaaaad/Vellum/issues"
+    "url": "https://github.com/msaaaad/attestly/issues"
   },
   "engines": {
     "node": ">=18"
