@@ -4,12 +4,7 @@ import { afterAll, describe, expect, it } from 'vitest';
 import { PgStorageAdapter } from '@vellum/storage-pg';
 import { connectionStringFor } from './test/db';
 
-/**
- * DOMAIN_CHECKLIST.md Phase 7: "Confirm the dashboard role literally cannot INSERT/UPDATE."
- * Checked directly against the database, not just "the dashboard's code never calls INSERT" —
- * the grants themselves (packages/storage-pg's migration) are what actually enforces this.
- */
-describe('vellum_readonly role — DOMAIN_CHECKLIST.md Phase 7', () => {
+describe('vellum_readonly role - DOMAIN_CHECKLIST.md Phase 7', () => {
   const appPool = new Pool({ connectionString: connectionStringFor('vellum_app') });
 
   afterAll(async () => {
@@ -23,7 +18,7 @@ describe('vellum_readonly role — DOMAIN_CHECKLIST.md Phase 7', () => {
       hashVersion: 1,
       tenantId,
       occurredAt: new Date().toISOString(),
-      actor: { id: 'u1', type: 'user', label: null },
+      actor: { id: '00000000-0000-4000-8000-000000000002', type: 'user', label: null },
       action: 'thing.done',
       entity: { type: 'Thing', id: 't-1' },
       changes: {},

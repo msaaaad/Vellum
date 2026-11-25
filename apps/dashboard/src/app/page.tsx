@@ -3,7 +3,7 @@ export default function HomePage() {
     <main>
       <h1>Vellum Dashboard</h1>
       <p className="subtitle">
-        Read-only chain browser — every read goes through the <code>vellum_readonly</code> role,
+        Read-only chain browser - every read goes through the <code>vellum_readonly</code> role,
         which the migration grants <code>SELECT</code> only. This app cannot write to or mutate the
         trail.
       </p>

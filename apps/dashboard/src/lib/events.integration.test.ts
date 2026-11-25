@@ -14,7 +14,7 @@ function buildEvent(
     hashVersion: 1,
     tenantId,
     occurredAt: new Date().toISOString(),
-    actor: { id: 'u1', type: 'user', label: 'sam@x.io' },
+    actor: { id: '00000000-0000-4000-8000-000000000002', type: 'user', label: 'sam@x.io' },
     action: 'thing.done',
     entity: { type: 'Thing', id: 't-1' },
     changes: {},
@@ -45,21 +45,23 @@ describe('queryEvents (integration)', () => {
       buildEvent(tenantId, {
         action: 'consent.granted',
         entity: { type: 'Consent', id: 'c1' },
-        actor: { id: 'u2', type: 'user', label: null },
+        actor: { id: '00000000-0000-4000-8000-000000000004', type: 'user', label: null },
       }),
     );
     await adapter.appendInline(
       buildEvent(tenantId, { action: 'consent.revoked', entity: { type: 'Consent', id: 'c1' } }),
     );
 
-    const all = await queryEvents(readonlyPool, tenantId);
+    const all = await queryEvents(readonlyPool, tenantId, {});
     expect(all).toHaveLength(3);
-    expect(all.map((e) => e.seq)).toEqual([3, 2, 1]); // seq DESC — most recent first
+    expect(all.map((e) => e.seq)).toEqual([3, 2, 1]);
 
     const byEntity = await queryEvents(readonlyPool, tenantId, { entityType: 'Consent' });
     expect(byEntity.map((e) => e.action)).toEqual(['consent.revoked', 'consent.granted']);
 
-    const byActor = await queryEvents(readonlyPool, tenantId, { actorId: 'u2' });
+    const byActor = await queryEvents(readonlyPool, tenantId, {
+      actorId: '00000000-0000-4000-8000-000000000004',
+    });
     expect(byActor.map((e) => e.action)).toEqual(['consent.granted']);
 
     const byAction = await queryEvents(readonlyPool, tenantId, { action: 'participant.created' });
@@ -72,7 +74,7 @@ describe('queryEvents (integration)', () => {
     await adapter.appendInline(buildEvent(tenantA, { action: 'secret.for.a' }));
     await adapter.appendInline(buildEvent(tenantB, { action: 'secret.for.b' }));
 
-    const rowsForA = await queryEvents(readonlyPool, tenantA);
+    const rowsForA = await queryEvents(readonlyPool, tenantA, {});
     expect(rowsForA.map((e) => e.action)).toEqual(['secret.for.a']);
   });
 

@@ -15,7 +15,7 @@ function buildEvent(
     hashVersion: 1,
     tenantId,
     occurredAt: new Date().toISOString(),
-    actor: { id: 'u1', type: 'user', label: 'sam@x.io' },
+    actor: { id: '00000000-0000-4000-8000-000000000002', type: 'user', label: 'sam@x.io' },
     action: 'thing.done',
     entity: { type: 'Thing', id: 't-1' },
     changes: {},
@@ -24,8 +24,6 @@ function buildEvent(
   };
 }
 
-/** Mirrors what Phase 8's tamper test does: disable the trigger as a superuser, mutate,
- * re-enable it. Only a superuser can do this; the read-only role can't even get close. */
 async function tamperRow(tenantId: string): Promise<void> {
   const superuser = new Client({ connectionString: TEST_DATABASE_URL });
   await superuser.connect();
@@ -73,7 +71,7 @@ describe('verifyTenantChain / buildTenantEvidencePack (integration)', () => {
     expect(result).toMatchObject({ ok: false, brokenAt: 1, brokenReason: 'HASH' });
   });
 
-  it('the evidence pack manifest reflects a broken chain too — export never hides a tamper', async () => {
+  it('the evidence pack manifest reflects a broken chain too - export never hides a tamper', async () => {
     const tenantId = randomUUID();
     await adapter.appendInline(buildEvent(tenantId, { action: 'a' }));
     await tamperRow(tenantId);
@@ -81,7 +79,7 @@ describe('verifyTenantChain / buildTenantEvidencePack (integration)', () => {
     const { manifest, events } = await buildTenantEvidencePack(readonlyPool, tenantId);
     expect(manifest.verify.ok).toBe(false);
     expect(manifest.headHash).toBeNull();
-    expect(events).toHaveLength(1); // the row is still there — just fails verification
+    expect(events).toHaveLength(1);
   });
 
   it('a clean chain exports a manifest stamped VERIFIED', async () => {
