@@ -4,12 +4,6 @@ import type { Participant } from '../types.js';
 import type { CreateParticipantInput } from './participants.service.js';
 import { ParticipantsService } from './participants.service.js';
 
-/**
- * DOMAIN_CHECKLIST.md §6.6 cross-cutting rules, all three in one place:
- *  - system/cron actions run under `withAuditContext` with `actor.type: 'system'`
- *  - a bulk action produces a summary event PLUS one event per entity, never one opaque row
- *  - imports are audited as `system` with `metadata.source`
- */
 @Injectable()
 export class ParticipantImportService {
   constructor(
@@ -31,8 +25,6 @@ export class ParticipantImportService {
       async () => {
         const created: Participant[] = [];
         for (const row of rows) {
-          // Each row still gets its own real participant.created event (system actor, from the
-          // ambient context above) — a bulk action is never collapsed into one opaque row.
           created.push(await this.participants.create(row));
         }
 

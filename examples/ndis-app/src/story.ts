@@ -12,15 +12,6 @@ import { IncidentsService } from './incidents/incidents.service.js';
 import { ParticipantImportService } from './participants/participant-import.service.js';
 import { ParticipantsService } from './participants/participants.service.js';
 
-/**
- * DOMAIN_CHECKLIST.md Phase 6 done-when: "a seeded participant's full story (create → consent →
- * agreement → claim → incident) exports as one ordered, verified timeline." Runs exactly that
- * story for one tenant, plus enough of the rest of the checklist's entities/actions to exercise
- * every capture mode this example demonstrates. Shared between `seed.ts` (the runnable CLI
- * script) and `ndis-app.integration.test.ts` (which runs this same story against a real
- * Postgres database and checks the result), so there's one definition of "the story", not two
- * that can drift apart.
- */
 export async function runFullStory(app: INestApplicationContext, tenantId: string): Promise<void> {
   const participants = app.get(ParticipantsService);
   const imports = app.get(ParticipantImportService);
@@ -32,11 +23,14 @@ export async function runFullStory(app: INestApplicationContext, tenantId: strin
   const auth = app.get(AuthService);
   const screenings = app.get(WorkerScreeningService);
 
-  const actor: AuditActor = { id: 'worker-1', type: 'user', label: 'sam@example-provider.org.au' };
+  const actor: AuditActor = {
+    id: '00000000-0000-4000-8000-000000000005',
+    type: 'user',
+    label: 'sam@example-provider.org.au',
+  };
   const requestMeta = { ip: null, userAgent: null, requestId: null, route: null };
 
   await withAuditContext({ tenantId, actor, requestMeta }, async () => {
-    // --- The core story: create -> consent -> agreement -> claim -> incident ---
     const participant = await participants.create({
       fullName: 'Jordan Lee',
       dateOfBirth: '1994-03-02',
@@ -50,7 +44,7 @@ export async function runFullStory(app: INestApplicationContext, tenantId: strin
       signatureImage: 'data:image/png;base64,AAAA',
     });
 
-    const agreement = await agreements.create(participant.id, '2026-01-01–2026-12-31');
+    const agreement = await agreements.create(participant.id, '2026-01-01-2026-12-31');
 
     const claim = await claims.create(agreement.id, participant.id, {
       ndisPeriod: '2026-01',
@@ -60,8 +54,6 @@ export async function runFullStory(app: INestApplicationContext, tenantId: strin
     await claims.submit(claim.id);
     await claims.approve(claim.id);
     await claims.pay(claim.id);
-    // Claim transitions use the transactional outbox, which a background worker normally drains.
-    // No worker runs in this one-shot story, so drain here — keeps the claim events in story order.
     await app.get<StoragePort>(AUDIT_STORAGE).drainOutbox(tenantId, 1000);
 
     const incident = await incidents.report(participant.id, {
@@ -71,7 +63,6 @@ export async function runFullStory(app: INestApplicationContext, tenantId: strin
       reportable: true,
     });
 
-    // --- The rest of the checklist: every other capture mode/action this example wires up ---
     await participants.view(participant.id);
     await participants.export(participant.id);
 
@@ -84,20 +75,28 @@ export async function runFullStory(app: INestApplicationContext, tenantId: strin
 
     await agreements.update(agreement.id, { status: 'active' });
 
-    const role = await roles.assign('worker-1', 'support-coordinator', 'admin-1');
-    await roles.revoke(role.id, 'admin-1');
+    const role = await roles.assign(
+      '00000000-0000-4000-8000-000000000005',
+      'support-coordinator',
+      '00000000-0000-4000-8000-000000000008',
+    );
+    await roles.revoke(role.id, '00000000-0000-4000-8000-000000000008');
 
     const screening = screenings.seed({
       id: randomUUID(),
-      workerId: 'worker-1',
+      workerId: '00000000-0000-4000-8000-000000000005',
       checkType: 'NDIS Worker Screening',
       expiresAt: '2026-12-31',
       updatedAt: new Date().toISOString(),
     });
     await screenings.update(screening.id, { expiresAt: '2027-06-30' });
 
-    await auth.login('worker-1', 'correct-horse-battery-staple').catch(() => undefined);
-    await auth.login('worker-1', 'wrong-password').catch(() => undefined);
+    await auth
+      .login('00000000-0000-4000-8000-000000000005', 'correct-horse-battery-staple')
+      .catch(() => undefined);
+    await auth
+      .login('00000000-0000-4000-8000-000000000005', 'wrong-password')
+      .catch(() => undefined);
 
     const toDelete = await participants.create({
       fullName: 'Temporary Duplicate',
@@ -108,7 +107,6 @@ export async function runFullStory(app: INestApplicationContext, tenantId: strin
     await participants.delete(toDelete.id, { reason: 'duplicate record' });
   });
 
-  // Runs its OWN withAuditContext internally, as a system actor — not nested in the block above.
   await imports.importParticipants(
     tenantId,
     [

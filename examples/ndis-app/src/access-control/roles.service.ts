@@ -4,21 +4,16 @@ import { Audited } from '@vellum/nestjs';
 import { InMemoryRepository } from '../in-memory-repository.js';
 import type { Role } from '../types.js';
 
-/** DOMAIN_CHECKLIST.md §6.5 — access control. */
 @Injectable()
 export class RolesService {
   readonly repo = new InMemoryRepository<Role>();
 
-  // A fresh assignment is a create, not a state change — matches the general
-  // "create → snapshot" pattern (the checklist's shared "diff + loadBefore" bullet line for
-  // role.assigned/role.revoked reads most sensibly as describing revoke's shape; assigning a
-  // role that didn't exist a moment ago has no meaningful "before" to diff against).
   @Audited({
     action: 'role.assigned',
     entity: 'Role',
-    entityId: (c) => (c.result as Role).id,
+    entityId: (pointcut) => (pointcut.result as Role).id,
     capture: 'snapshot',
-    metadata: (c) => ({ assignedBy: c.args[2] as string }),
+    metadata: (pointcut) => ({ assignedBy: pointcut.args[2] as string }),
   })
   async assign(workerId: string, roleName: string, _assignedBy: string): Promise<Role> {
     return this.repo.create({
@@ -33,13 +28,14 @@ export class RolesService {
   @Audited({
     action: 'role.revoked',
     entity: 'Role',
-    entityId: (c) => c.args[0] as string,
+    entityId: (pointcut) => pointcut.args[0] as string,
     capture: 'diff',
-    loadBefore: (c) => (c.self as RolesService).repo.findByIdOrThrow(c.args[0] as string),
-    metadata: (c) => ({ assignedBy: c.args[1] as string }),
+    loadBefore: (pointcut) =>
+      (pointcut.self as RolesService).repo.getByIdOrFail(pointcut.args[0] as string),
+    metadata: (pointcut) => ({ assignedBy: pointcut.args[1] as string }),
   })
   async revoke(id: string, _revokedBy: string): Promise<Role> {
-    const existing = this.repo.findByIdOrThrow(id);
+    const existing = this.repo.getByIdOrFail(id);
     return this.repo.save({ ...existing, revokedAt: new Date().toISOString() });
   }
 }

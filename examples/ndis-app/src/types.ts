@@ -1,7 +1,3 @@
-// Domain types for the NDIS provider demo — DOMAIN_CHECKLIST.md Phase 6. Deliberately small:
-// the point of this example is exercising `@vellum/nestjs`'s audit wiring correctly across a
-// realistic set of entities, not modelling a full NDIS provider's data model.
-
 export interface Participant {
   id: string;
   fullName: string;

@@ -11,7 +11,6 @@ export interface ReportIncidentInput {
   reportable: boolean;
 }
 
-/** DOMAIN_CHECKLIST.md §6.2 — the second entity, right after Consent. */
 @Injectable()
 export class IncidentsService {
   readonly repo = new InMemoryRepository<Incident>();
@@ -19,11 +18,11 @@ export class IncidentsService {
   @Audited({
     action: 'incident.reported',
     entity: 'Incident',
-    entityId: (c) => (c.result as Incident).id,
+    entityId: (pointcut) => (pointcut.result as Incident).id,
     capture: 'snapshot',
     redact: ['clinicalNotes'],
-    metadata: (c) => {
-      const input = c.args[1] as ReportIncidentInput;
+    metadata: (pointcut) => {
+      const input = pointcut.args[1] as ReportIncidentInput;
       return { severity: input.severity, reportable: input.reportable };
     },
   })
@@ -44,37 +43,36 @@ export class IncidentsService {
   @Audited({
     action: 'incident.severity_changed',
     entity: 'Incident',
-    entityId: (c) => c.args[0] as string,
+    entityId: (pointcut) => pointcut.args[0] as string,
     capture: 'diff',
-    loadBefore: (c) => (c.self as IncidentsService).repo.findByIdOrThrow(c.args[0] as string),
-    metadata: (c) => ({ reason: c.args[2] as string }),
+    loadBefore: (pointcut) =>
+      (pointcut.self as IncidentsService).repo.getByIdOrFail(pointcut.args[0] as string),
+    metadata: (pointcut) => ({ reason: pointcut.args[2] as string }),
   })
   async changeSeverity(id: string, severity: IncidentSeverity, _reason: string): Promise<Incident> {
-    const existing = this.repo.findByIdOrThrow(id);
+    const existing = this.repo.getByIdOrFail(id);
     return this.repo.save({ ...existing, severity });
   }
 
-  /** Who looked during the investigation matters for a high-stakes entity like this one, so
-   * reads are audited too — capture: 'none' still records the access itself. */
   @Audited({
     action: 'incident.viewed',
     entity: 'Incident',
-    entityId: (c) => c.args[0] as string,
+    entityId: (pointcut) => pointcut.args[0] as string,
     capture: 'none',
   })
   async view(id: string): Promise<Incident> {
-    return this.repo.findByIdOrThrow(id);
+    return this.repo.getByIdOrFail(id);
   }
 
   @Audited({
     action: 'incident.closed',
     entity: 'Incident',
-    entityId: (c) => c.args[0] as string,
+    entityId: (pointcut) => pointcut.args[0] as string,
     capture: 'snapshot',
-    metadata: (c) => ({ outcome: c.args[1] as string }),
+    metadata: (pointcut) => ({ outcome: pointcut.args[1] as string }),
   })
   async close(id: string, outcome: string): Promise<Incident> {
-    const existing = this.repo.findByIdOrThrow(id);
+    const existing = this.repo.getByIdOrFail(id);
     return this.repo.save({ ...existing, status: 'closed', outcome });
   }
 }

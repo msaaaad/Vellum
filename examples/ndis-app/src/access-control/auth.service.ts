@@ -1,13 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { AuditService } from '@vellum/nestjs';
 
-/**
- * DOMAIN_CHECKLIST.md §6.5 — "auth.login_succeeded/auth.login_failed via imperative record()
- * (audit failures too)". A decorator can't audit a thrown error (ARCHITECTURE.md §4.2: "Errors
- * in the handler are re-thrown before any event is written... record explicitly in a catch") —
- * this is exactly that case, which is why login uses `audit.record()` directly instead of
- * `@Audited()`.
- */
 @Injectable()
 export class AuthService {
   constructor(@Inject(AuditService) private readonly audit: AuditService) {}

@@ -14,17 +14,10 @@ import { ParticipantsService } from './participants/participants.service.js';
 
 const pool = createPool();
 
-/**
- * This example never runs an HTTP server — every audited call happens inside a manually
- * established `withAuditContext()` block (`seed.ts`), the non-HTTP path ARCHITECTURE.md §4.1
- * describes for jobs/CLI/seeds. `tenantResolver`/`actorResolver` exist only because
- * `AuditModuleOptions` requires them; a `AuditContextMiddleware` that would call them is never
- * wired up, so they're never actually invoked.
- */
 function unusedResolver(kind: 'tenant' | 'actor'): () => never {
   return () => {
     throw new Error(
-      `${kind}Resolver was called — this example has no HTTP layer; every call should already be wrapped in withAuditContext() (see seed.ts).`,
+      `${kind}Resolver was called - this example has no HTTP layer; every call should already be wrapped in withAuditContext() (see seed.ts).`,
     );
   };
 }

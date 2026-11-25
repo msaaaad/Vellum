@@ -1,4 +1,3 @@
-// Shared test-only support — not a *.test.ts file itself, so vitest never runs it directly.
 import { AuditService, AuditWriter, type AuditModuleOptions } from '@vellum/nestjs';
 import {
   GENESIS_HASH,
@@ -11,23 +10,16 @@ import {
   type StoragePort,
 } from '@vellum/core';
 
-/**
- * A minimal, real (not mocked) `StoragePort`. `@Audited()` wraps the method itself (see
- * `packages/nestjs/src/decorator.ts`), so exercising it needs no DI container at all — just a
- * real `AuditWriter` constructed against this, then a plain `new SomeService()` to call. `enqueue`
- * chains immediately (as if already drained) purely for test observability — the outbox/worker
- * mechanics themselves are `packages/nestjs`'s own tests to own, not this example's.
- */
 export class InMemoryStorage implements StoragePort<unknown> {
   rows: ChainRow[] = [];
 
   async head() {
-    const last = this.rows.at(-1);
-    return last ? { seq: last.seq, rowHash: last.rowHash } : null;
+    const lastRow = this.rows.at(-1);
+    return lastRow ? { seq: lastRow.seq, rowHash: lastRow.rowHash } : null;
   }
 
   async appendInline(event: PendingAuditEvent): Promise<ChainRow> {
-    return this.chain(event);
+    return this.appendToChain(event);
   }
 
   async readRange() {
@@ -35,7 +27,7 @@ export class InMemoryStorage implements StoragePort<unknown> {
   }
 
   async enqueue(_tx: unknown, event: PendingAuditEvent): Promise<void> {
-    this.chain(event);
+    this.appendToChain(event);
   }
 
   async drainOutbox() {
@@ -48,7 +40,7 @@ export class InMemoryStorage implements StoragePort<unknown> {
 
   async recordCheckpoint(tenantId: string): Promise<Checkpoint> {
     return {
-      id: 'c1',
+      id: '00000000-0000-4000-8000-00000000000a',
       tenantId,
       headSeq: this.rows.at(-1)?.seq ?? 0,
       headHash: this.rows.at(-1)?.rowHash ?? GENESIS_HASH,
@@ -57,30 +49,32 @@ export class InMemoryStorage implements StoragePort<unknown> {
     };
   }
 
-  private chain(event: PendingAuditEvent): ChainRow {
-    const last = this.rows.at(-1);
-    const seq = last ? last.seq + 1 : 1;
-    const prevHash = last ? last.rowHash : GENESIS_HASH;
-    const full: AuditEvent = { ...event, seq };
-    const rowHash = hashEvent(prevHash, toCanonicalPayload(full));
-    const row: ChainRow = { ...full, prevHash, rowHash };
+  private appendToChain(event: PendingAuditEvent): ChainRow {
+    const lastRow = this.rows.at(-1);
+    const seq = lastRow ? lastRow.seq + 1 : 1;
+    const prevHash = lastRow ? lastRow.rowHash : GENESIS_HASH;
+    const sequencedEvent: AuditEvent = { ...event, seq };
+    const rowHash = hashEvent(prevHash, toCanonicalPayload(sequencedEvent));
+    const row: ChainRow = { ...sequencedEvent, prevHash, rowHash };
     this.rows.push(row);
     return row;
   }
 }
 
-export function testAuditOptions(overrides: Partial<AuditModuleOptions> = {}): AuditModuleOptions {
+export function testAuditOptions(overrides?: Partial<AuditModuleOptions>): AuditModuleOptions {
   return {
     storage: { adapter: 'pg', pool: {} as never },
-    tenantResolver: () => 't1',
-    actorResolver: () => ({ id: 'u1', type: 'user', label: 'sam@x.io' }),
+    tenantResolver: () => '00000000-0000-4000-8000-000000000001',
+    actorResolver: () => ({
+      id: '00000000-0000-4000-8000-000000000002',
+      type: 'user',
+      label: 'sam@x.io',
+    }),
     ...overrides,
   };
 }
 
-/** A fresh, isolated audit runtime for one test: constructing `AuditWriter` registers it as the
- * active writer `@Audited()` reaches for (see runtime.ts) — that's the only wiring needed. */
-export function createTestRuntime(overrides: Partial<AuditModuleOptions> = {}): {
+export function createTestRuntime(overrides?: Partial<AuditModuleOptions>): {
   storage: InMemoryStorage;
   writer: AuditWriter;
   audit: AuditService;
