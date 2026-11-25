@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { VerifyResult } from '@vellum/core';
+import type { VerifyResult } from '@attestly/core';
 import { formatVerifyReport, shortHash } from './format.js';
 
 describe('shortHash', () => {
@@ -13,7 +13,7 @@ describe('formatVerifyReport', () => {
   it('reports INTACT with the shortened head hash', () => {
     const result: VerifyResult = { ok: true, count: 3, head: 'a'.repeat(64) };
     const report = formatVerifyReport('00000000-0000-4000-8000-000000000001', result, '2026-09-16T00:00:00.000Z');
-    expect(report).toContain('Vellum verify - tenant 00000000-0000-4000-8000-000000000001  (3 events)');
+    expect(report).toContain('Attestly verify - tenant 00000000-0000-4000-8000-000000000001  (3 events)');
     expect(report).toContain('RESULT: INTACT');
     expect(report).toContain(shortHash('a'.repeat(64)));
     expect(report).toContain('verified_at = 2026-09-16T00:00:00.000Z');

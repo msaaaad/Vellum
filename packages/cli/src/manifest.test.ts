@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ChainRow, VerifyResult } from '@vellum/core';
+import type { ChainRow, VerifyResult } from '@attestly/core';
 import { buildManifest } from './manifest.js';
 
 function fakeRow(seq: number): ChainRow {
@@ -37,7 +37,7 @@ describe('buildManifest', () => {
     expect(manifest.verify).toBe(verify);
     expect(manifest.toolVersion).toBe('0.0.0');
     expect(manifest.generatedAt).toBe('2026-09-16T00:00:00.000Z');
-    expect(manifest.tool).toBe('vellum');
+    expect(manifest.tool).toBe('attestly');
   });
 
   it('carries a null headHash through from a broken full-chain verify', () => {

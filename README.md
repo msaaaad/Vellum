@@ -1,24 +1,21 @@
-# Vellum
+# Attestly
 
 [![CI](https://github.com/msaaaad/Vellum/actions/workflows/ci.yml/badge.svg)](https://github.com/msaaaad/Vellum/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 [![node](https://img.shields.io/badge/node-%3E%3D18-339933.svg)](https://nodejs.org)
-[![npm](https://img.shields.io/npm/v/@vellum/nestjs.svg?label=%40vellum%2Fnestjs)](https://www.npmjs.com/package/@vellum/nestjs)
+[![npm](https://img.shields.io/npm/v/@attestly/nestjs.svg?label=%40attestly%2Fnestjs)](https://www.npmjs.com/package/@attestly/nestjs)
 
-Vellum is the treated animal-skin parchment that legal charters, deeds, and official records were written on for centuries - chosen precisely because it lasts and resists alteration. That's the exact metaphor for this product: a permanent, tamper-evident record. It's short, brandable, and evokes "trusted official record" without being literal like nestjs-audit-log. That said - it's a working name, not a decision.
 > Tamper-evident, tenant-scoped audit trails for NestJS - a drop-in evidence layer that turns "we log stuff" into "we can *prove* what happened."
 
-`@vellum/nestjs` gives any multi-tenant NestJS + PostgreSQL app an **append-only, hash-chained audit log** with almost no work: add a decorator, and every meaningful action is recorded with *who / what / which tenant / when*, chained so that any later edit or deletion is detectable. One command produces an auditor-ready **evidence pack**.
+`@attestly/nestjs` gives any multi-tenant NestJS + PostgreSQL app an **append-only, hash-chained audit log** with almost no work: add a decorator, and every meaningful action is recorded with *who / what / which tenant / when*, chained so that any later edit or deletion is detectable. One command produces an auditor-ready **evidence pack**.
 
 Built for the moment every B2B SaaS eventually hits: an enterprise customer's security review asks for *"an immutable audit log of all data access and changes"* - and you don't want to build (and defend) that from scratch.
-
-> **Naming note:** the unscoped `vellum` name is already taken on npm, so everything ships under the `@vellum/*` scope. The CLI binary is still called `vellum`.
 
 ---
 
 ## Table of contents
 
-- [Why Vellum](#why-vellum)
+- [Why Attestly](#why-attestly)
 - [What you get in v1](#what-you-get-in-v1)
 - [Install](#install)
 - [Quick start (5 minutes)](#quick-start-5-minutes)
@@ -31,7 +28,7 @@ Built for the moment every B2B SaaS eventually hits: an enterprise customer's se
 - [The dashboard](#the-dashboard)
 - [Configuration reference](#configuration-reference)
 - [Two write modes: inline vs outbox](#two-write-modes-inline-vs-outbox)
-- [What Vellum does and does NOT protect against](#what-vellum-does-and-does-not-protect-against)
+- [What Attestly does and does NOT protect against](#what-attestly-does-and-does-not-protect-against)
 - [The tamper test](#the-tamper-test)
 - [Monorepo layout](#monorepo-layout)
 - [Roadmap](#roadmap)
@@ -41,9 +38,9 @@ See [`ARCHITECTURE.md`](./ARCHITECTURE.md) for the full technical design (hash-c
 
 ---
 
-## Why Vellum
+## Why Attestly
 
-Most "audit logs" are a `logs` table anyone with DB access can silently `UPDATE` or `DELETE`. That fails a real audit, because nothing proves the log wasn't edited after the fact. Vellum fixes the three hard parts:
+Most "audit logs" are a `logs` table anyone with DB access can silently `UPDATE` or `DELETE`. That fails a real audit, because nothing proves the log wasn't edited after the fact. Attestly fixes the three hard parts:
 
 1. **Tamper-evidence** - each row embeds a SHA-256 hash of the previous row + its own contents, forming a per-tenant chain. Alter or delete any past row and the chain breaks at a detectable point.
 2. **Tenant isolation** - the trail is scoped per organisation with PostgreSQL **Row-Level Security**, enforced at the database, not just in app code. Tenant A can never read tenant B's history.
@@ -63,7 +60,7 @@ It feels native to NestJS (decorators, DI, middleware, an optional BullMQ worker
 | Row-Level Security tenant isolation | yes |
 | Append-only enforcement (grants + trigger) | yes |
 | `inline` and `outbox` (BullMQ) write modes | yes |
-| `vellum verify` - CLI + programmatic | yes |
+| `attestly verify` - CLI + programmatic | yes |
 | Evidence pack export - JSON + PDF | yes |
 | Read-only Next.js dashboard (browse, filter, verify badge, export) | yes |
 | Prisma / node-postgres storage adapter | yes |
@@ -76,10 +73,10 @@ It feels native to NestJS (decorators, DI, middleware, an optional BullMQ worker
 ## Install
 
 ```bash
-pnpm add @vellum/nestjs @vellum/core pg
-pnpm add -D @vellum/cli
-# using Prisma instead of pg? Vellum only needs your existing client:
-pnpm add @vellum/storage-prisma   # optional, @vellum/nestjs already bundles it
+pnpm add @attestly/nestjs @attestly/core pg
+pnpm add -D @attestly/cli
+# using Prisma instead of pg? Attestly only needs your existing client:
+pnpm add @attestly/storage-prisma   # optional, @attestly/nestjs already bundles it
 # outbox mode also needs BullMQ + Redis (you likely already have these)
 pnpm add bullmq
 ```
@@ -95,8 +92,8 @@ Requires: **NestJS 10+**, **PostgreSQL 14+**, Node 18+. Storage adapter for **Pr
 **1. Run the migration** (creates `audit_events`, indexes, RLS policies, the append-only trigger, `audit_outbox` and `audit_checkpoints`). It's plain SQL, safe to re-run, and works the same whether you use `pg` or Prisma:
 
 ```bash
-npx vellum migrate --database-url "$DATABASE_URL"
-# or apply node_modules/@vellum/storage-pg/migrations/0001_init.sql with psql
+npx attestly migrate --database-url "$DATABASE_URL"
+# or apply node_modules/@attestly/storage-pg/migrations/0001_init.sql with psql
 ```
 
 Run it as a role that can create tables and roles. The migration also creates two roles, `vellum_app` (insert/select only) and `vellum_readonly`; your app should connect as `vellum_app` in production so the database itself refuses `UPDATE` and `DELETE`.
@@ -105,14 +102,14 @@ Run it as a role that can create tables and roles. The migration also creates tw
 
 ```ts
 // app.module.ts
-import { AuditModule } from '@vellum/nestjs';
+import { AuditModule } from '@attestly/nestjs';
 
 @Module({
   imports: [
     AuditModule.forRoot({
       storage: { adapter: 'prisma', client: () => prisma },   // or { adapter: 'pg', pool }
       mode: 'inline',                                          // 'outbox' for production
-      // Tell Vellum how to read the tenant + actor from the request:
+      // Tell Attestly how to read the tenant + actor from the request:
       tenantResolver: (req) => req.auth.orgId,
       actorResolver:  (req) => ({ id: req.auth.userId, type: 'user', label: req.auth.email }),
     }),
@@ -125,7 +122,7 @@ export class AppModule {}
 
 ```ts
 // main.ts / a module
-import { AuditContextMiddleware } from '@vellum/nestjs';
+import { AuditContextMiddleware } from '@attestly/nestjs';
 consumer.apply(AuditContextMiddleware).forRoutes('*');
 ```
 
@@ -145,7 +142,7 @@ async updateParticipant(id: string, patch: UpdateParticipantDto) {
 That's it. Every call now writes a chained audit event. Check it:
 
 ```bash
-npx vellum verify --tenant <orgId> --database-url "$DATABASE_URL"
+npx attestly verify --tenant <orgId> --database-url "$DATABASE_URL"
 # [ok] every row_hash reproduces from canonical payload + prev_hash
 # RESULT: INTACT   head = 2dd878...1356
 ```
@@ -191,7 +188,7 @@ interface AuditPointcut {
 
 ### Diffs (before/after)
 
-A PNG-flat "snapshot" is fine for creates/deletes. For **updates**, provide `loadBefore` so Vellum can compute a field-level diff:
+A PNG-flat "snapshot" is fine for creates/deletes. For **updates**, provide `loadBefore` so Attestly can compute a field-level diff:
 
 ```ts
 @Audited({
@@ -230,13 +227,13 @@ await this.prisma.$transaction(async (tx) => {
 Verification recomputes every hash and checks the chain is contiguous and unbroken.
 
 ```bash
-npx vellum verify --tenant <orgId> [--from <seq>] [--to <seq>] [--json]
+npx attestly verify --tenant <orgId> [--from <seq>] [--to <seq>] [--json]
 ```
 
 Sample output:
 
 ```
-Vellum verify - tenant 6f1e...  (1,284 events)
+Attestly verify - tenant 6f1e...  (1,284 events)
   [ok] sequence contiguous (1 ... 1284, no gaps)
   [ok] every row_hash reproduces from canonical payload + prev_hash
   [ok] every prev_hash links to the prior row
@@ -264,7 +261,7 @@ const result = await this.verifier.verify(orgId);     // { ok, count, head, brok
 Produce a self-describing bundle for an auditor or customer:
 
 ```bash
-npx vellum export --tenant <orgId> --from 2026-01-01 --to 2026-06-30 --format pdf
+npx attestly export --tenant <orgId> --from 2026-01-01 --to 2026-06-30 --format pdf
 ```
 
 Each pack contains a **manifest** - tenant, date range, event count, chain head hash, tool version, generated-at, and the verification result (PASS/FAIL) - plus the events themselves. `--format json` yields machine-readable output; `--format pdf` yields a human-readable cover page + table. The export always re-runs verification first and stamps the result on the cover, so the pack carries its own proof of integrity.
@@ -295,7 +292,7 @@ AuditModule.forRoot({
   },
   mode: 'inline' | 'outbox',         // default 'inline'
   outbox?: {                         // required when mode = 'outbox'
-    queueName?: 'vellum-audit',
+    queueName?: 'attestly-audit',
     connection: RedisOptions,        // BullMQ connection
     batchSize?: 100,
     pollMs?: 1000,
@@ -335,7 +332,7 @@ Both modes produce the identical on-disk chain; you can switch by config. Full s
 
 ---
 
-## What Vellum does and does NOT protect against
+## What Attestly does and does NOT protect against
 
 Being honest about this is the whole point of an audit tool.
 
@@ -343,7 +340,7 @@ Being honest about this is the whole point of an audit tool.
 
 **It does NOT, by itself, stop:** a determined actor with **full database ownership** who rewrites the *entire* chain forward from the point they change (recomputing every subsequent hash). A self-contained in-DB chain is tamper-**evident against partial edits**, not tamper-**proof against a total rewrite**.
 
-**How you close that gap** (v1-friendly, roadmap for automation): periodically publish the chain's **head hash** somewhere the app's DB role cannot alter - WORM object storage (S3 Object Lock), a second append-only system, email to auditors, or (later) a public transparency log. Vellum records these as **checkpoints**; once a head hash is anchored externally, no in-DB rewrite can move history behind that point undetected. v1 ships the checkpoint table + a manual `vellum checkpoint` command; automated anchoring is on the roadmap.
+**How you close that gap** (v1-friendly, roadmap for automation): periodically publish the chain's **head hash** somewhere the app's DB role cannot alter - WORM object storage (S3 Object Lock), a second append-only system, email to auditors, or (later) a public transparency log. Attestly records these as **checkpoints**; once a head hash is anchored externally, no in-DB rewrite can move history behind that point undetected. v1 ships the checkpoint table + a manual `attestly checkpoint` command; automated anchoring is on the roadmap.
 
 The append-only **trigger + grant model** also means the *application* role literally cannot `UPDATE`/`DELETE` the table - only a superuser/table owner can, which narrows the threat to people who already hold the keys to the database.
 
@@ -360,13 +357,13 @@ pnpm demo:tamper
 What it does, step by step, all against a real Postgres database:
 
 1. **Seeds a real chain** - `examples/ndis-app` creates a participant, grants consent, opens a service agreement, and submits a claim.
-2. **`vellum verify` -> `INTACT`** - every hash reproduces, every row links to the last.
+2. **`attestly verify` -> `INTACT`** - every hash reproduces, every row links to the last.
 3. **Tampers one row, as a Postgres superuser**, bypassing the append-only trigger the same way a database owner could:
    ```sql
    UPDATE audit_events SET changes = '{}' WHERE action = 'consent.granted';
    ```
-4. **`vellum verify` -> `TAMPERED at seq N`** - the exact row, immediately.
-5. **`vellum export --format pdf` -> the cover says `FAILED`** - the pack still gets produced; it just can't lie about what it found.
+4. **`attestly verify` -> `TAMPERED at seq N`** - the exact row, immediately.
+5. **`attestly export --format pdf` -> the cover says `FAILED`** - the pack still gets produced; it just can't lie about what it found.
 
 `scripts/tamper-demo.sh` is that script - a real terminal session, not a mockup, meant to be screen-recorded start to finish. `examples/ndis-app/src/tamper-demo.integration.test.ts` runs the same five steps as an automated test, and `apps/dashboard/src/lib/verify.integration.test.ts` proves the dashboard's chain badge flips to [x] on the same kind of tamper - so both places a human would look (the CLI and the dashboard) catch it, not just one.
 
@@ -375,11 +372,11 @@ What it does, step by step, all against a real Postgres database:
 ## Monorepo layout
 
 ```
-vellum/
+attestly/
 ├- packages/
 │  ├- core/            # framework-agnostic: canonicalization, hashing, verifier, types
 │  ├- nestjs/          # AuditModule, @Audited, context, writer, outbox worker
-│  ├- cli/             # `vellum` - migrate | verify | export | checkpoint
+│  ├- cli/             # `attestly` - migrate | verify | export | checkpoint
 │  ├- storage-pg/      # node-postgres StoragePort adapter + the SQL migration
 │  └- storage-prisma/  # Prisma StoragePort adapter (same behaviour as storage-pg)
 ├- apps/
@@ -404,7 +401,7 @@ vellum/
 
 ## FAQ
 
-**Does this replace application logging?** No - it complements it. Logs are for debugging; Vellum is for *provable records of who changed what*.
+**Does this replace application logging?** No - it complements it. Logs are for debugging; Attestly is for *provable records of who changed what*.
 
 **Performance?** In `outbox` mode the request path does one cheap insert; hashing happens off the hot path. In `inline` mode you pay one hash + one insert + a per-tenant advisory lock per audited action.
 
@@ -416,4 +413,4 @@ vellum/
 
 ---
 
-*Vellum - because "we have logs" isn't the same as "we can prove it."*
+*Attestly - because "we have logs" isn't the same as "we can prove it."*

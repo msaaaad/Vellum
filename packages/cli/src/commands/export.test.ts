@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { ChainRow } from '@vellum/core';
+import type { ChainRow } from '@attestly/core';
 import { filterByDate, parseDateBoundary } from './export.js';
 
 function fakeRow(occurredAt: string): ChainRow {

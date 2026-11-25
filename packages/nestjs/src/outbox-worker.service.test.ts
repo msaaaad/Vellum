@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { ChainRow, PendingAuditEvent, StoragePort } from '@vellum/core';
-import { GENESIS_HASH } from '@vellum/core';
+import type { ChainRow, PendingAuditEvent, StoragePort } from '@attestly/core';
+import { GENESIS_HASH } from '@attestly/core';
 import { AuditOutboxWorker } from './outbox-worker.service.js';
 import type { AuditModuleOptions } from './types.js';
 
@@ -101,11 +101,11 @@ describe('AuditOutboxWorker.onModuleInit', () => {
     expect(lastWorkerArgs[2]).toMatchObject({ connection, concurrency: 1 });
 
     expect(addMock).toHaveBeenCalledWith(
-      'vellum:drain-tick',
+      'attestly:drain-tick',
       {},
       expect.objectContaining({
         repeat: { every: 2000 },
-        jobId: 'vellum:drain-tick',
+        jobId: 'attestly:drain-tick',
         attempts: expect.any(Number),
         backoff: expect.any(Object),
       }),
@@ -120,9 +120,9 @@ describe('AuditOutboxWorker.onModuleInit', () => {
 
     await worker.onModuleInit();
 
-    expect(lastQueueArgs[0]).toBe('vellum-audit');
+    expect(lastQueueArgs[0]).toBe('attestly-audit');
     expect(addMock).toHaveBeenCalledWith(
-      'vellum:drain-tick',
+      'attestly:drain-tick',
       {},
       expect.objectContaining({ repeat: { every: 1000 } }),
     );

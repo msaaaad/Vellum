@@ -4,8 +4,8 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { Client, Pool } from 'pg';
 import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
-import { PgStorageAdapter } from '@vellum/storage-pg';
-import type { PendingAuditEvent } from '@vellum/core';
+import { PgStorageAdapter } from '@attestly/storage-pg';
+import type { PendingAuditEvent } from '@attestly/core';
 import { run } from './cli.js';
 import { connectionStringFor, TEST_DATABASE_URL } from './test/db.js';
 
@@ -61,7 +61,7 @@ afterAll(async () => {
 });
 
 beforeEach(async () => {
-  dir = await mkdtemp(join(tmpdir(), 'vellum-cli-test-'));
+  dir = await mkdtemp(join(tmpdir(), 'attestly-cli-test-'));
   logSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
   errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});
 });
@@ -72,7 +72,7 @@ afterEach(async () => {
   errorSpy.mockRestore();
 });
 
-describe('vellum migrate', () => {
+describe('attestly migrate', () => {
   it('is safe to run again against an already-migrated database', async () => {
     const code = await run(['migrate', '--database-url', TEST_DATABASE_URL]);
     expect(code).toBe(0);
@@ -80,7 +80,7 @@ describe('vellum migrate', () => {
   });
 });
 
-describe('vellum verify', () => {
+describe('attestly verify', () => {
   it('reports INTACT for a freshly seeded, untampered chain', async () => {
     const tenantId = randomUUID();
     await adapter.appendInline(buildEvent(tenantId, { action: 'a' }));
@@ -164,7 +164,7 @@ describe('vellum verify', () => {
   });
 });
 
-describe('vellum export', () => {
+describe('attestly export', () => {
   it('--format json writes a manifest + events file whose verify is VERIFIED', async () => {
     const tenantId = randomUUID();
     await adapter.appendInline(buildEvent(tenantId, { action: 'consent.granted' }));
@@ -267,7 +267,7 @@ describe('vellum export', () => {
   });
 });
 
-describe('vellum checkpoint', () => {
+describe('attestly checkpoint', () => {
   it('records and prints the current chain head', async () => {
     const tenantId = randomUUID();
     await adapter.appendInline(buildEvent(tenantId, { action: 'a' }));

@@ -1,6 +1,6 @@
 import type { Pool } from 'pg';
-import { verifyChain, type ChainRow, type VerifyResult } from '@vellum/core';
-import { PgStorageAdapter } from '@vellum/storage-pg';
+import { verifyChain, type ChainRow, type VerifyResult } from '@attestly/core';
+import { PgStorageAdapter } from '@attestly/storage-pg';
 
 export async function verifyTenantChain(pool: Pool, tenantId: string): Promise<VerifyResult> {
   const adapter = new PgStorageAdapter(pool);

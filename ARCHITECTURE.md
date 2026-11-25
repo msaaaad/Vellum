@@ -1,6 +1,6 @@
-# Vellum - Architecture (v1)
+# Attestly - Architecture (v1)
 
-This document is the source of truth for *how* Vellum works, precisely enough to build from without guessing. It covers the data model, the hash-chain and canonicalization spec, the two write paths, concurrency/ordering, verification, the threat model, and the key decisions with rationale.
+This document is the source of truth for *how* Attestly works, precisely enough to build from without guessing. It covers the data model, the hash-chain and canonicalization spec, the two write paths, concurrency/ordering, verification, the threat model, and the key decisions with rationale.
 
 Companion: [`README.md`](./README.md) (usage).
 
@@ -35,7 +35,7 @@ Companion: [`README.md`](./README.md) (usage).
              └-----------------------┬---------------------------┘
                                      ▼
                           ┌--------------------┐        ┌--------------------------┐
-                          │ audit_events        │        │ vellum verify / export   │
+                          │ audit_events        │        │ attestly verify / export   │
                           │ (append-only, RLS,  │◀-------│ dashboard (read-only,    │
                           │  per-tenant chain)  │        │ RLS-scoped role)         │
                           └--------------------┘        └--------------------------┘
@@ -304,7 +304,7 @@ CREATE POLICY vellum_tenant_write ON audit_events FOR INSERT
 
 The writer sets `SET LOCAL vellum.tenant_id = '<uuid>'` inside its transaction (mirrors a standard per-request RLS setup). The dashboard uses a **separate read-only role** with only `SELECT`.
 
-**The honest summary:** Vellum makes tampering *evident* for anyone below full-database-owner, and - once you anchor head hashes externally (v1: manual `vellum checkpoint`; v1.1: automated) - evident even against a database owner for all history before the anchor. It is not a blockchain and doesn't pretend to be; it's a pragmatic, auditable evidence layer.
+**The honest summary:** Attestly makes tampering *evident* for anyone below full-database-owner, and - once you anchor head hashes externally (v1: manual `attestly checkpoint`; v1.1: automated) - evident even against a database owner for all history before the anchor. It is not a blockchain and doesn't pretend to be; it's a pragmatic, auditable evidence layer.
 
 ---
 
@@ -331,4 +331,4 @@ The writer sets `SET LOCAL vellum.tenant_id = '<uuid>'` inside its transaction (
 7. `apps/dashboard`: read-only list/filter, verify badge, export button.
 8. `storage-prisma` adapter; polish; README badges; publish.
 
-**Definition of done for v1:** a fresh NestJS app can install, migrate, add one decorator, generate events, `vellum verify` passes, a deliberate tamper makes it fail, and `vellum export --format pdf` produces a pack whose cover says "VERIFIED".
+**Definition of done for v1:** a fresh NestJS app can install, migrate, add one decorator, generate events, `attestly verify` passes, a deliberate tamper makes it fail, and `attestly export --format pdf` produces a pack whose cover says "VERIFIED".

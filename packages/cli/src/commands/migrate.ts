@@ -1,6 +1,6 @@
 import { parseArgs } from 'node:util';
 import { Client } from 'pg';
-import { readMigrationSql } from '@vellum/storage-pg';
+import { readMigrationSql } from '@attestly/storage-pg';
 import { resolveDatabaseUrl } from '../db.js';
 import { CliError } from '../errors.js';
 
@@ -27,7 +27,7 @@ export async function runMigrate(argv: string[]): Promise<number> {
   }
 
   console.log(
-    'vellum migrate: schema is up to date ' +
+    'attestly migrate: schema is up to date ' +
       '(audit_events, audit_outbox, audit_checkpoints, RLS policies, append-only trigger).',
   );
   return 0;

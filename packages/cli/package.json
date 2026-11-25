@@ -1,7 +1,7 @@
 {
-  "name": "@vellum/cli",
+  "name": "@attestly/cli",
   "version": "0.1.0",
-  "description": "vellum CLI: migrate | verify | export | checkpoint.",
+  "description": "attestly CLI: migrate | verify | export | checkpoint.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,15 +16,15 @@
     }
   },
   "bin": {
-    "vellum": "dist/index.js"
+    "attestly": "dist/index.js"
   },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@vellum/core": "workspace:*",
-    "@vellum/storage-pg": "workspace:*",
+    "@attestly/core": "workspace:*",
+    "@attestly/storage-pg": "workspace:*",
     "pdfkit": "^0.15.0",
     "pg": "^8.22.0"
   },

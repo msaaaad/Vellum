@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
-import type { AuditActor } from '@vellum/core';
-import { AuditModule } from '@vellum/nestjs';
+import type { AuditActor } from '@attestly/core';
+import { AuditModule } from '@attestly/nestjs';
 import { AuthService } from './access-control/auth.service.js';
 import { RolesService } from './access-control/roles.service.js';
 import { WorkerScreeningService } from './access-control/worker-screening.service.js';

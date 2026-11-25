@@ -11,7 +11,7 @@ import {
   type PendingAuditEvent,
   type ReadRangeOptions,
   type StoragePort,
-} from '@vellum/core';
+} from '@attestly/core';
 
 interface AuditEventRow extends QueryResultRow {
   tenant_id: string;

@@ -1,7 +1,7 @@
 {
-  "name": "@vellum/storage-pg",
+  "name": "@attestly/storage-pg",
   "version": "0.1.0",
-  "description": "node-postgres StoragePort adapter for Vellum.",
+  "description": "node-postgres StoragePort adapter for Attestly.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@vellum/core": "workspace:*",
+    "@attestly/core": "workspace:*",
     "pg": "^8.22.0"
   },
   "devDependencies": {

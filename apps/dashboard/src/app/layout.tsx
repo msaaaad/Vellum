@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'Vellum Dashboard',
+  title: 'Attestly Dashboard',
   description: 'Read-only audit chain browser.',
 };
 

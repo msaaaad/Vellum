@@ -1,6 +1,6 @@
-import { PgStorageAdapter } from '@vellum/storage-pg';
-import { PrismaStorageAdapter, type PrismaLike } from '@vellum/storage-prisma';
-import type { StoragePort } from '@vellum/core';
+import { PgStorageAdapter } from '@attestly/storage-pg';
+import { PrismaStorageAdapter, type PrismaLike } from '@attestly/storage-prisma';
+import type { StoragePort } from '@attestly/core';
 import type { AuditModuleOptions } from './types.js';
 
 export function buildStorage(options: AuditModuleOptions): StoragePort<unknown> {

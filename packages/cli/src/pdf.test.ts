@@ -2,7 +2,7 @@ import { mkdtemp, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import type { ChainRow } from '@vellum/core';
+import type { ChainRow } from '@attestly/core';
 import { buildManifest } from './manifest.js';
 import { coverStampFor, renderEvidencePackPdf } from './pdf.js';
 
@@ -84,7 +84,7 @@ describe('renderEvidencePackPdf', () => {
   let dir: string;
 
   beforeEach(async () => {
-    dir = await mkdtemp(join(tmpdir(), 'vellum-pdf-test-'));
+    dir = await mkdtemp(join(tmpdir(), 'attestly-pdf-test-'));
   });
 
   afterEach(async () => {
