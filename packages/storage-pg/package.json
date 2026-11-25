@@ -1,6 +1,6 @@
 {
   "name": "@getattestly/storage-pg",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "node-postgres StoragePort adapter for Attestly.",
   "type": "module",
   "main": "dist/index.js",
